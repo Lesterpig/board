@@ -1,7 +1,6 @@
 package probe
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"regexp"
@@ -20,7 +19,7 @@ type HTTP struct {
 // NewHTTP returns a ready-to-go probe.
 // A warning will be triggered if the response takes more than `warning` to come.
 // The `regex` is used to check the content of the website, and can be empty.
-func NewHTTP(addrport string, warning time.Duration, fatal time.Duration, regex string) *HTTP {
+func NewHTTP(addrport string, warning, fatal time.Duration, regex string) *HTTP {
 	return &HTTP{
 		client: &http.Client{
 			Timeout: fatal,
@@ -52,12 +51,5 @@ func (h *HTTP) Probe() (status Status, message string) {
 		return StatusError, "Unexpected result"
 	}
 
-	if duration >= h.warning {
-		status = StatusWarning
-	} else {
-		status = StatusOK
-	}
-
-	message = fmt.Sprintf("%d ms", duration.Nanoseconds()/1000000)
-	return
+	return EvaluateDuration(duration, h.warning)
 }

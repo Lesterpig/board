@@ -7,6 +7,8 @@ This repository contains a small web server used to provide a very accurate stat
 
 With just a glance, you'll be able to spot the faulty parts of your infrastructure.
 
+![Screenshot](screenshot.png "Screenshot")
+
 Configuration
 -------------
 
@@ -44,4 +46,31 @@ Available probes
 // A warning will be triggered if the response takes more than `warning` to come.
 // The `regex` is used to check the content of the website, and can be empty.
 func NewHTTP(addrport string, warning time.Duration, fatal time.Duration, regex string) *HTTP
+```
+
+#### SMTP (over TLS)
+
+```go
+// NewSMTP returns a ready-to-go probe.
+// A warning will be triggered if the response takes more than `warning` to come.
+// BEWARE! Only full TLS servers are working with this probe.
+func NewSMTP(addrport string, warning, fatal time.Duration) *SMTP
+```
+
+#### Minecraft
+
+```go
+// NewMinecraft returns a ready-to-go probe.
+// The resulting probe will perform a real minecraft handshake to get
+// some stats on the server (connected players and version).
+func NewMinecraft(addrport string, fatal time.Duration) *Minecraft
+```
+
+#### Open port (TCP/UDP)
+
+```go
+// NewPort returns a ready-to-go probe.
+// The `network` variable should be `tcp` or `udp` or their v4/v6 variants.
+// A warning will be triggered if the response takes more than `warning` to come.
+func NewPort(network, addrport string, warning, fatal time.Duration) *Port
 ```
