@@ -1,0 +1,22 @@
+// CUSTOMIZE AND RENAME THIS FILE TO "config.go" TO BUILD THIS PROJECT
+
+package main
+
+import (
+	"board/probe"
+	"time"
+)
+
+// M is the current configuration of the dashboard.
+var M = &Manager{
+	"Category Name": []*Service{
+		&Service{
+			Name:   "Service 1",
+			Prober: probe.NewHTTP("https://www.example.com", time.Second, 10*time.Second, ""),
+		},
+		&Service{
+			Name:   "Service 2",
+			Prober: probe.NewHTTP("http://sub.example.com", time.Second, 10*time.Second, "^<html>"),
+		},
+	},
+}

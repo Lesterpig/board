@@ -1,0 +1,34 @@
+<html ng-app="boardApp">
+  <head>
+    <title>Board</title>
+    <link type="text/css" rel="stylesheet" href="/css/main.css">
+    <link type="text/css" rel="stylesheet" href="/css/font-awesome.min.css">
+  </head>
+  <body ng-controller="boardCtrl">
+    <section ng-repeat="(category, services) in categories">
+      <h1>{{ category }}</h1>
+
+      <div class="service" ng-repeat="service in services">
+        <p>{{ service.Name }}</p>
+        <span class="info">{{ service.Message }}</span>
+
+        <div ng-switch="service.Status">
+          <div ng-switch-when="OK" class="status status-OK">
+            <i class="fa fa-check"></i>
+          </div>
+          <div ng-switch-when="ERROR" class="status status-ERROR">
+            <i class="fa fa-times"></i>
+          </div>
+          <div ng-switch-when="WARNING" class="status status-WARNING">
+            <i class="fa fa-exclamation"></i>
+          </div>
+          <div ng-switch-default class="status status-UNKNOWN">
+            <i class="fa fa-question"></i>
+          </div>
+        </div>
+      </div>
+
+      <script type="text/javascript" src="/js/angular.min.js"></script>
+      <script type="text/javascript" src="/js/controller.js"></script>
+  </body>
+</html>

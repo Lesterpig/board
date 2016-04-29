@@ -1,0 +1,66 @@
+/* General */
+
+body {
+  background-color: #192823;
+  color: white;
+  font-family: Verdana;
+}
+
+h1 {
+  margin: 15px;
+}
+
+.service {
+  margin-left: 20px;
+  display: inline-block;
+  position: relative;
+  text-align: center;
+}
+
+.service p {
+  color: #D0C6B1;
+}
+
+.service .info {
+  display: block;
+  position: absolute;
+  width: 100%;
+  bottom: 20px;
+  z-index: 2;
+  font-size: 0.8em;
+}
+
+.status {
+  height: 140px;
+  width: 150px;
+  padding-top: 10px;
+}
+
+.status i {
+  font-size: 100px;
+}
+
+/* Status boxes */
+
+.status-OK {
+  background-color: #218559;
+}
+
+.status-ERROR {
+  background-color: #DD1E2F;
+  animation: blink 3s linear infinite;
+}
+
+.status-WARNING {
+  background-color: #EBB035;
+}
+
+.status-UNKNOWN {
+  background-color: #D0C6B1;
+}
+
+/* Animations */
+
+@keyframes blink {
+  50% { opacity: 0.2; }
+}
