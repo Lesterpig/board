@@ -3,7 +3,7 @@ Board
 
 > One dashboard to check them all.
 
-This repository contains a small web server used to provide a very accurate status *for all your systems*.
+This repository contains a small web server used to provide a very accurate status *for all your systems*. It also supports live alerts when a service goes down.
 
 With just a glance, you'll be able to spot the faulty parts of your infrastructure.
 
@@ -74,3 +74,32 @@ func NewMinecraft(addrport string, fatal time.Duration) *Minecraft
 // A warning will be triggered if the response takes more than `warning` to come.
 func NewPort(network, addrport string, warning, fatal time.Duration) *Port
 ```
+
+Available alerts
+----------------
+
+#### Pushbullet
+
+```go
+// NewPushbullet returns a Pushbullet alerter from the private token
+// available in the `account` page.
+func NewPushbullet(token string) *Pushbullet
+```
+
+TODO
+----
+
+- Add probes
+  + IMAP
+  + OpenVPN
+  + Ping (ICMP)
+  + SNMP
+  + DNS
+  + DHCP
+- Add alerts
+  + Mail
+  + Twitter
+- Configure interval
+- Per-service alerts
+- Per-service interval
+- Check more often if down

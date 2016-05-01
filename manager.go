@@ -31,8 +31,22 @@ func ProbeAll(manager *Manager) {
 	for _, services := range *manager {
 		for _, service := range services {
 			go func(service *Service) {
+				prevStatus := service.Status
 				service.Status, service.Message = service.Prober.Probe()
+
+				if prevStatus != service.Status && service.Status == probe.StatusError {
+					AlertAll(service)
+				}
 			}(service)
 		}
+	}
+}
+
+// AlertAll sends an alert signaling the provided service is DOWN.
+// It uses global configuration for list of alert (`A` variable).
+func AlertAll(service *Service) {
+	date := " (" + time.Now().Format("15:04:05 MST") + ")"
+	for _, alert := range A {
+		alert.Alert(service.Name+" DOWN", service.Message+date)
 	}
 }
