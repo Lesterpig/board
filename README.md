@@ -48,6 +48,16 @@ Available probes
 func NewHTTP(addrport string, warning time.Duration, fatal time.Duration, regex string) *HTTP
 ```
 
+#### DNS
+
+```go
+// NewDNS returns a ready-to-go probe.
+// `domain` will be resolved through a lookup for an A record.
+// `expected` should be the first returned IPv4 address or empty to accept any IP address.
+// A warning will be triggered if the response takes more than `warning` to come.
+func NewDNS(addr, domain, expected string, warning, fatal time.Duration) *DNS
+```
+
 #### SMTP (over TLS)
 
 ```go
