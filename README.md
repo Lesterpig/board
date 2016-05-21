@@ -46,7 +46,8 @@ Available probes
 // NewHTTP returns a ready-to-go probe.
 // A warning will be triggered if the response takes more than `warning` to come.
 // The `regex` is used to check the content of the website, and can be empty.
-func NewHTTP(addrport string, warning time.Duration, fatal time.Duration, regex string) *HTTP
+// Set `verifyCertificate` to `false` to skip the certificate verification.
+func NewHTTP(addrport string, warning time.Duration, fatal time.Duration, regex string, verifyCertificate bool) *HTTP
 ```
 
 #### DNS
