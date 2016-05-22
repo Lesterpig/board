@@ -1,0 +1,9 @@
+language: go
+go_import_path: board
+install:
+  - go get github.com/miekg/dns
+before_script:
+  - cp config.sample config.go
+script:
+  - gofmt -l . | [ `wc -l` == 0 ]
+  - go build .

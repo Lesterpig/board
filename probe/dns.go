@@ -7,8 +7,8 @@ import (
 
 // DNS Probe, used to check whether a DNS server is answering.
 type DNS struct {
-	addr, domain, expected  string
-	warning, fatal time.Duration
+	addr, domain, expected string
+	warning, fatal         time.Duration
 }
 
 // NewDNS returns a ready-to-go probe.
@@ -33,7 +33,7 @@ func (d *DNS) Probe() (status Status, message string) {
 	m.SetQuestion(d.domain, dns.TypeA)
 
 	c := new(dns.Client)
-	r, rtt, err := c.Exchange(m, d.addr + ":53")
+	r, rtt, err := c.Exchange(m, d.addr+":53")
 	if err != nil {
 		return StatusError, err.Error()
 	}
