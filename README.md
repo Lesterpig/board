@@ -1,5 +1,5 @@
-Board
-=====
+Board [![Build Status](https://travis-ci.org/Lesterpig/board.svg?branch=master)](https://travis-ci.org/Lesterpig/board)
+=======================================================================================================================
 
 > One dashboard to check them all.
 
@@ -15,6 +15,7 @@ Configuration
 Requires a golang workspace.
 
 ```bash
+cd $GOPATH/src
 git clone https://github.com/lesterpig/board
 cd board
 cp config.sample config.go
@@ -25,8 +26,8 @@ At this point, you'll want to customize the `config.go` file with your very own 
 Then, build and run it!
 
 ```bash
-go build .
-./board -p 8080
+go get ./...
+board -p 8080
 ```
 
 The dashboard will be available via a web interface.
@@ -104,7 +105,6 @@ TODO
   + OpenVPN
   + Ping (ICMP)
   + SNMP
-  + DNS
   + DHCP
 - Add alerts
   + Mail
