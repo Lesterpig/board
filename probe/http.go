@@ -1,6 +1,7 @@
 package probe
 
 import (
+	"crypto/tls"
 	"io/ioutil"
 	"net/http"
 	"regexp"
@@ -16,17 +17,41 @@ type HTTP struct {
 	regex    *regexp.Regexp
 }
 
+// HTTP Probe, used to check HTTP(S) websites status.
+type HTTPParams struct {
+	Regex             string
+	VerifyCertificate bool
+}
+
 // NewHTTP returns a ready-to-go probe.
 // A warning will be triggered if the response takes more than `warning` to come.
-// The `regex` is used to check the content of the website, and can be empty.
-func NewHTTP(addrport string, warning, fatal time.Duration, regex string) *HTTP {
+func NewHTTP(addrport string, warning, fatal time.Duration) *HTTP {
 	return &HTTP{
 		client: &http.Client{
 			Timeout: fatal,
 		},
 		addrport: addrport,
 		warning:  warning,
-		regex:    regexp.MustCompile(regex),
+	}
+}
+
+// NewCustomHTTP returns a ready-to-go probe.
+// A warning will be triggered if the response takes more than `warning` to come.
+// `opt` may contain two optional fields: `Regex` and `VerifyCertificate`.
+// The `Regex` is used to check the content of the website, and can be empty.
+// Set `VerifyCertificate` to `false` to skip the certificate verification.
+func NewCustomHTTP(addrport string, warning, fatal time.Duration, opt *HTTPParams) *HTTP {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: !opt.VerifyCertificate},
+	}
+	return &HTTP{
+		client: &http.Client{
+			Timeout:   fatal,
+			Transport: tr,
+		},
+		addrport: addrport,
+		warning:  warning,
+		regex:    regexp.MustCompile(opt.Regex),
 	}
 }
 
@@ -47,7 +72,7 @@ func (h *HTTP) Probe() (status Status, message string) {
 	}
 
 	body, _ := ioutil.ReadAll(res.Body)
-	if !h.regex.Match(body) {
+	if h.regex != nil && !h.regex.Match(body) {
 		return StatusError, "Unexpected result"
 	}
 
