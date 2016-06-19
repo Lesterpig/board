@@ -45,8 +45,14 @@ Available probes
 ```go
 // NewHTTP returns a ready-to-go probe.
 // A warning will be triggered if the response takes more than `warning` to come.
-// The `regex` is used to check the content of the website, and can be empty.
-func NewHTTP(addrport string, warning time.Duration, fatal time.Duration, regex string) *HTTP
+func NewHTTP(addrport string, warning time.Duration, fatal time.Duration) *HTTP
+
+// NewCustomHTTP returns a ready-to-go probe.
+// A warning will be triggered if the response takes more than `warning` to come.
+// `opt` may contain two optional fields: `Regex` and `VerifyCertificate`.
+// The `Regex` is used to check the content of the website, and can be empty.
+// Set `VerifyCertificate` to `false` to skip the certificate verification.
+func NewCustomHTTP(addrport string, warning, fatal time.Duration, opt *HTTPParams) *HTTP {
 ```
 
 #### DNS
