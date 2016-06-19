@@ -30,7 +30,7 @@ func (p *Port) Probe() (status Status, message string) {
 	start := time.Now()
 	conn, err := net.DialTimeout(p.network, p.addrport, p.fatal)
 	if err != nil {
-		return StatusError, "Unable to connect"
+		return StatusError, defaultConnectErrorMsg
 	}
 
 	_ = conn.Close()

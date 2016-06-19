@@ -31,7 +31,7 @@ func (s *SMTP) Probe() (status Status, message string) {
 	start := time.Now()
 	conn, err := net.DialTimeout("tcp", s.addrport, s.fatal)
 	if err != nil {
-		return StatusError, "Unable to connect"
+		return StatusError, defaultConnectErrorMsg
 	}
 
 	defer func() { _ = conn.Close() }()

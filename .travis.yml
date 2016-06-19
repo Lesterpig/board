@@ -7,7 +7,9 @@ go_import_path: board
 
 install:
   - cp config.sample config.go
-  - go get -v -t -u ./...
+  - go install ./...
 
 script:
-  - gofmt -l . | [ `wc -l` == 0 ]
+  - go get -u github.com/alecthomas/gometalinter
+  - gometalinter --install
+  - gometalinter --deadline 100s -t -E misspell -E gofmt --skip vendor ./...

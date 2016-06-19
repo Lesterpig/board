@@ -63,7 +63,7 @@ func (h *HTTP) Probe() (status Status, message string) {
 	duration := time.Since(start)
 
 	if err != nil {
-		return StatusError, "Unable to connect"
+		return StatusError, defaultConnectErrorMsg
 	}
 
 	if res.StatusCode != 200 {

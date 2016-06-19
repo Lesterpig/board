@@ -17,6 +17,8 @@ const (
 	StatusOK             = "OK"
 )
 
+const defaultConnectErrorMsg = "Unable to connect"
+
 // Prober is the base interface that each probe must implement.
 type Prober interface {
 	// Probe is expected to check one service's health.

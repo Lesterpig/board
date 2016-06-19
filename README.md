@@ -26,7 +26,7 @@ At this point, you'll want to customize the `config.go` file with your very own 
 Then, build and run it!
 
 ```bash
-go get ./...
+go build
 board -p 8080
 ```
 

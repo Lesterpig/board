@@ -1,0 +1,35 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "5rPfda8jFccr3A6heL+JAmi9K9g=",
+			"origin": "github.com/stretchr/testify/vendor/github.com/davecgh/go-spew/spew",
+			"path": "github.com/davecgh/go-spew/spew",
+			"revision": "6cb3b85ef5a0efef77caef88363ec4d4b5c0976d",
+			"revisionTime": "2016-05-04T13:01:55Z"
+		},
+		{
+			"checksumSHA1": "92iF6u5pEEUm+6iCC09UMOgRcX0=",
+			"origin": "board/vendor/github.com/miekg/dns",
+			"path": "github.com/miekg/dns",
+			"revision": "48ab6605c66ac797e07f615101c3e9e10e932b66",
+			"revisionTime": "2016-05-12T06:43:16Z"
+		},
+		{
+			"checksumSHA1": "zKKp5SZ3d3ycKe4EKMNT0BqAWBw=",
+			"origin": "github.com/stretchr/testify/vendor/github.com/pmezard/go-difflib/difflib",
+			"path": "github.com/pmezard/go-difflib/difflib",
+			"revision": "6cb3b85ef5a0efef77caef88363ec4d4b5c0976d",
+			"revisionTime": "2016-05-04T13:01:55Z"
+		},
+		{
+			"checksumSHA1": "Bn333k9lTndxU3D6n/G5c+GMcYY=",
+			"origin": "board/vendor/github.com/stretchr/testify/assert",
+			"path": "github.com/stretchr/testify/assert",
+			"revision": "6cb3b85ef5a0efef77caef88363ec4d4b5c0976d",
+			"revisionTime": "2016-05-04T13:01:55Z"
+		}
+	],
+	"rootPath": "board"
+}

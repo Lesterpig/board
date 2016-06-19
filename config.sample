@@ -16,11 +16,11 @@ var opt = &probe.HTTPParams{
 // M configures the available probes on the monitor, sorted by catgeories.
 var M = &Manager{
 	"Category Name": []*Service{
-		&Service{
+		{
 			Name:   "Service 1",
 			Prober: probe.NewHTTP("https://www.example.com", time.Second, 10*time.Second),
 		},
-		&Service{
+		{
 			Name:   "Service 2",
 			Prober: probe.NewCustomHTTP("http://sub.example.com", time.Second, 10*time.Second, opt),
 		},

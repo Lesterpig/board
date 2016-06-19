@@ -32,7 +32,7 @@ func NewMinecraft(addrport string, fatal time.Duration) *Minecraft {
 func (m *Minecraft) Probe() (status Status, message string) {
 	conn, err := net.DialTimeout("tcp", m.addrport, m.fatal)
 	if err != nil {
-		return StatusError, "Unable to connect"
+		return StatusError, defaultConnectErrorMsg
 	}
 	defer func() { _ = conn.Close() }()
 
