@@ -2,27 +2,22 @@ package probe
 
 import (
 	"github.com/miekg/dns"
-	"time"
+	"github.com/mitchellh/mapstructure"
 )
 
 // DNS Probe, used to check whether a DNS server is answering.
-type DNS struct {
-	addr, domain, expected string
-	warning, fatal         time.Duration
-}
-
-// NewDNS returns a ready-to-go probe.
 // `domain` will be resolved through a lookup for an A record.
 // `expected` should be the first returned IPv4 address or empty to accept any IP address.
-// A warning will be triggered if the response takes more than `warning` to come.
-func NewDNS(addr, domain, expected string, warning, fatal time.Duration) *DNS {
-	return &DNS{
-		addr:     addr,
-		domain:   domain,
-		expected: expected,
-		warning:  warning,
-		fatal:    fatal,
-	}
+type DNS struct {
+	Config
+	domain, expected string
+}
+
+// Init configures the probe.
+func (d *DNS) Init(c Config) error {
+	err := mapstructure.Decode(c.Options, d)
+	d.Config = c
+	return err
 }
 
 // Probe checks a DNS server.
@@ -33,7 +28,7 @@ func (d *DNS) Probe() (status Status, message string) {
 	m.SetQuestion(d.domain, dns.TypeA)
 
 	c := new(dns.Client)
-	r, rtt, err := c.Exchange(m, d.addr+":53")
+	r, rtt, err := c.Exchange(m, d.Target+":53")
 	if err != nil {
 		return StatusError, err.Error()
 	}
@@ -50,5 +45,5 @@ func (d *DNS) Probe() (status Status, message string) {
 		return StatusError, "Failed to resolve domain."
 	}
 
-	return EvaluateDuration(rtt, d.warning)
+	return EvaluateDuration(rtt, d.Warning)
 }

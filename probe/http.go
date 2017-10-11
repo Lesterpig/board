@@ -7,51 +7,44 @@ import (
 	"regexp"
 	"strconv"
 	"time"
+
+	"github.com/mitchellh/mapstructure"
 )
 
 // HTTP Probe, used to check HTTP(S) websites status.
 type HTTP struct {
-	client   *http.Client
-	addrport string
-	warning  time.Duration
-	regex    *regexp.Regexp
+	Config
+	client *http.Client
+	regex  *regexp.Regexp
 }
 
-// HTTPParams is a structure containing optional parameters for NewCustomHTTP constructor.
+// HTTPOptions is a structure containing optional parameters.
 // The `Regex` is used to check the content of the website, and can be empty.
 // Set `VerifyCertificate` to `false` to skip the TLS certificate verification.
-type HTTPParams struct {
+type HTTPOptions struct {
 	Regex             string
 	VerifyCertificate bool
 }
 
-// NewHTTP returns a ready-to-go probe.
-// A warning will be triggered if the response takes more than `warning` to come.
-func NewHTTP(addrport string, warning, fatal time.Duration) *HTTP {
-	return &HTTP{
-		client: &http.Client{
-			Timeout: fatal,
-		},
-		addrport: addrport,
-		warning:  warning,
+// Init configures the probe.
+func (h *HTTP) Init(c Config) error {
+	h.Config = c
+	var opts HTTPOptions
+	err := mapstructure.Decode(c.Options, &opts)
+	if err != nil {
+		return err
 	}
-}
 
-// NewCustomHTTP returns a ready-to-go probe.
-// A warning will be triggered if the response takes more than `warning` to come.
-func NewCustomHTTP(addrport string, warning, fatal time.Duration, opt *HTTPParams) *HTTP {
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: !opt.VerifyCertificate},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: !opts.VerifyCertificate},
 	}
-	return &HTTP{
-		client: &http.Client{
-			Timeout:   fatal,
-			Transport: tr,
-		},
-		addrport: addrport,
-		warning:  warning,
-		regex:    regexp.MustCompile(opt.Regex),
+
+	h.client = &http.Client{
+		Timeout:   c.Fatal,
+		Transport: tr,
 	}
+	h.regex, err = regexp.Compile(opts.Regex)
+	return err
 }
 
 // Probe checks a website status.
@@ -59,7 +52,7 @@ func NewCustomHTTP(addrport string, warning, fatal time.Duration, opt *HTTPParam
 // Otherwise, an error message is returned.
 func (h *HTTP) Probe() (status Status, message string) {
 	start := time.Now()
-	res, err := h.client.Get(h.addrport)
+	res, err := h.client.Get(h.Target)
 	duration := time.Since(start)
 
 	if err != nil {
@@ -75,5 +68,5 @@ func (h *HTTP) Probe() (status Status, message string) {
 		return StatusError, "Unexpected result"
 	}
 
-	return EvaluateDuration(duration, h.warning)
+	return EvaluateDuration(duration, h.Warning)
 }

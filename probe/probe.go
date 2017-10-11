@@ -6,6 +6,15 @@ import (
 	"time"
 )
 
+// Config holds probe configuration, submitted through Init methods.
+type Config struct {
+	Target  string
+	Options map[string]interface{}
+
+	Warning time.Duration
+	Fatal   time.Duration
+}
+
 // Status represents the current status of a monitored service.
 type Status string
 
@@ -21,8 +30,7 @@ const defaultConnectErrorMsg = "Unable to connect"
 
 // Prober is the base interface that each probe must implement.
 type Prober interface {
-	// Probe is expected to check one service's health.
-	// An additionnal message can be returned for more feedbacks.
+	Init(Config) error
 	Probe() (status Status, message string)
 }
 
