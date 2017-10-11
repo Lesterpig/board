@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/lesterpig/board/probe"
+	"github.com/Lesterpig/board/probe"
 
 	"github.com/spf13/viper"
 )

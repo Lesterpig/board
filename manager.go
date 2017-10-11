@@ -3,7 +3,7 @@ package main
 import (
 	"time"
 
-	"github.com/lesterpig/board/probe"
+	"github.com/Lesterpig/board/probe"
 )
 
 // Service stores several information from a service, especially its last status.
