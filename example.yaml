@@ -1,0 +1,21 @@
+services:
+  - name: Lesterpig.com
+    category: Web
+    probe: http
+    config:
+      target: https://www.lesterpig.com
+      options:
+        regex: Loïck Bonniot
+  - name: SMTP
+    category: Services
+    probe: smtp
+    config:
+      warning: 10s
+      fatal: 15s
+      target: mail.google.com:465
+  # ...
+
+alerts:
+  - type: pushbullet
+    token: <your token here>
+  # ...

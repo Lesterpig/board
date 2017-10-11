@@ -4,16 +4,22 @@ import (
 	"errors"
 	"time"
 
+	"github.com/Lesterpig/board/alert"
 	"github.com/Lesterpig/board/probe"
 
 	"github.com/spf13/viper"
 )
 
-type config struct {
+type serviceConfig struct {
 	probe.Config
 	Name     string
 	Category string
 	Probe    string
+}
+
+type alertConfig struct {
+	Type  string
+	Token string
 }
 
 var probeConstructors = map[string](func() probe.Prober){
@@ -24,6 +30,14 @@ var probeConstructors = map[string](func() probe.Prober){
 	"smtp":      func() probe.Prober { return &probe.SMTP{} },
 }
 
+var alertConstructors = map[string](func(c alertConfig) alert.Alerter){
+	"pushbullet": func(c alertConfig) alert.Alerter {
+		return alert.NewPushbullet(c.Token)
+	},
+}
+
+var alerters []alert.Alerter
+
 func loadConfig() (Manager, error) {
 	viper.SetConfigName("board")
 	viper.AddConfigPath(".")
@@ -32,27 +46,20 @@ func loadConfig() (Manager, error) {
 		return nil, err
 	}
 
-	servicesConfig := make([]config, 0)
-	err = viper.UnmarshalKey("services", &servicesConfig)
+	sc := make([]serviceConfig, 0)
+	err = viper.UnmarshalKey("services", &sc)
 	if err != nil {
 		return nil, err
 	}
 
 	manager := make(Manager)
-	for _, c := range servicesConfig {
+	for _, c := range sc {
 		constructor := probeConstructors[c.Probe]
 		if constructor == nil {
 			return nil, errors.New("unknown probe type: " + c.Probe)
 		}
 
-		// Update default fields
-		if c.Warning == 0 {
-			c.Warning = 500 * time.Millisecond
-		}
-
-		if c.Fatal == 0 {
-			c.Fatal = time.Minute
-		}
+		c.Config = setProbeConfigDefaults(c.Config)
 
 		prober := constructor()
 		err = prober.Init(c.Config)
@@ -66,5 +73,33 @@ func loadConfig() (Manager, error) {
 		})
 	}
 
+	ac := make([]alertConfig, 0)
+	err = viper.UnmarshalKey("alerts", &ac)
+	if err != nil {
+		return nil, err
+	}
+
+	alerters = make([]alert.Alerter, 0)
+	for _, c := range ac {
+		constructor := alertConstructors[c.Type]
+		if constructor == nil {
+			return nil, errors.New("unknown alert type: " + c.Type)
+		}
+
+		alerters = append(alerters, constructor(c))
+	}
+
 	return manager, err
+}
+
+func setProbeConfigDefaults(c probe.Config) probe.Config {
+	if c.Warning == 0 {
+		c.Warning = 500 * time.Millisecond
+	}
+
+	if c.Fatal == 0 {
+		c.Fatal = time.Minute
+	}
+
+	return c
 }
