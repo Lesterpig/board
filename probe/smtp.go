@@ -8,34 +8,29 @@ import (
 )
 
 // SMTP Probe, used to check smtp servers status
-type SMTP struct {
-	addrport       string
-	warning, fatal time.Duration
-}
-
-// NewSMTP returns a ready-to-go probe.
-// A warning will be triggered if the response takes more than `warning` to come.
 // BEWARE! Only full TLS servers are working with this probe.
-func NewSMTP(addrport string, warning, fatal time.Duration) *SMTP {
-	return &SMTP{
-		addrport: addrport,
-		warning:  warning,
-		fatal:    fatal,
-	}
+type SMTP struct {
+	Config
 }
 
-// Probe checks a website status.
+// Init configures the probe.
+func (s *SMTP) Init(c Config) error {
+	s.Config = c
+	return nil
+}
+
+// Probe checks a mailbox status.
 // If the operation succeeds, the message will be the duration of the SMTP handshake in ms.
 // Otherwise, an error message is returned.
 func (s *SMTP) Probe() (status Status, message string) {
 	start := time.Now()
-	conn, err := net.DialTimeout("tcp", s.addrport, s.fatal)
+	conn, err := net.DialTimeout("tcp", s.Target, s.Fatal)
 	if err != nil {
 		return StatusError, defaultConnectErrorMsg
 	}
 
 	defer func() { _ = conn.Close() }()
-	host, _, _ := net.SplitHostPort(s.addrport)
+	host, _, _ := net.SplitHostPort(s.Target)
 	secure := tls.Client(conn, &tls.Config{
 		ServerName: host,
 	})
@@ -49,5 +44,5 @@ func (s *SMTP) Probe() (status Status, message string) {
 		return StatusError, "Unexpected reply"
 	}
 
-	return EvaluateDuration(time.Since(start), s.warning)
+	return EvaluateDuration(time.Since(start), s.Warning)
 }

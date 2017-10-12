@@ -1,13 +1,7 @@
 language: go
 
 go:
-  - 1.6
-
-go_import_path: board
-
-install:
-  - cp config.sample config.go
-  - go install ./...
+  - 1.9
 
 script:
   - go get -u github.com/alecthomas/gometalinter

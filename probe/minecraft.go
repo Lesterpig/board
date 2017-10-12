@@ -5,23 +5,17 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"time"
 )
 
 // Minecraft Probe, used to check minecraft servers status
 type Minecraft struct {
-	addrport string
-	fatal    time.Duration
+	Config
 }
 
-// NewMinecraft returns a ready-to-go probe.
-// The resulting probe will perform a real minecraft handshake to get
-// some stats on the server (connected players and version).
-func NewMinecraft(addrport string, fatal time.Duration) *Minecraft {
-	return &Minecraft{
-		addrport: addrport,
-		fatal:    fatal,
-	}
+// Init configures the probe.
+func (m *Minecraft) Init(c Config) error {
+	m.Config = c
+	return nil
 }
 
 // Probe checks a minecraft server status.
@@ -30,7 +24,7 @@ func NewMinecraft(addrport string, fatal time.Duration) *Minecraft {
 // If there is no slot available for a new player, a warning will be triggered.
 // Otherwise, an error message is returned.
 func (m *Minecraft) Probe() (status Status, message string) {
-	conn, err := net.DialTimeout("tcp", m.addrport, m.fatal)
+	conn, err := net.DialTimeout("tcp", m.Target, m.Fatal)
 	if err != nil {
 		return StatusError, defaultConnectErrorMsg
 	}
