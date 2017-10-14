@@ -9,6 +9,8 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	rice "github.com/GeertJohan/go.rice"
 )
 
 var port = flag.Int("p", 8080, "Port to use")
@@ -22,7 +24,7 @@ func main() {
 	}
 
 	// Setup static folder
-	http.Handle("/", http.FileServer(http.Dir("./static")))
+	http.Handle("/", http.FileServer(rice.MustFindBox("static").HTTPBox()))
 
 	// Setup logic route
 	http.HandleFunc("/data", func(w http.ResponseWriter, req *http.Request) {

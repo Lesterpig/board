@@ -17,3 +17,15 @@ go get github.com/lesterpig/board
 cp example.yaml board.yaml
 vim board.yaml
 ```
+
+Build single binary
+-------------------
+
+You may want to include the `/static/` directory as a ZIP resource in your binary.
+
+```
+go build -ldflags "-s -w" .
+rice append --exec board
+```
+
+Documentation: https://github.com/GeertJohan/go.rice#append
