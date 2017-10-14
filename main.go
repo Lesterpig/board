@@ -33,6 +33,6 @@ func main() {
 		_, _ = w.Write(data)
 	})
 
-	go manager.ProbeLoop(time.Minute)
+	go manager.ProbeLoop(10 * time.Minute)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
 }
