@@ -3,7 +3,7 @@
 body {
   background-color: #192823;
   color: white;
-  font-family: Verdana;
+  font-family: BlinkMacSystemFont, -apple-system, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
 }
 
 h1 {
