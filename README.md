@@ -18,6 +18,17 @@ cp example.yaml board.yaml
 vim board.yaml
 ```
 
+Docker Build
+------------
+After installation the board can be build as a docker image.
+
+```bash
+# Building image
+docker build -t lesterpig/board .
+# Running container with board.yaml from current dir
+docker run -p 8008:8008 -v ${PWD}/board.yaml:/app/board.yaml lesterpig/board /app/board -p 8008
+```
+
 Build single binary
 -------------------
 
