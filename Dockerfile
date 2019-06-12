@@ -16,5 +16,5 @@ RUN rice append --exec /board
 FROM alpine
 WORKDIR /app
 COPY --from=build-env /board /app/board
-EXPOSE 80
-CMD ["/board", "-p", "8008"]
+EXPOSE 8080
+CMD ["/app/board"]

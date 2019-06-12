@@ -65,3 +65,24 @@ h1 {
 @keyframes blink {
   50% { opacity: 0.2; }
 }
+
+/* Links */
+ /* unvisited link */
+ a:link {
+  color: white;
+}
+
+/* visited link */
+a:visited {
+  color: white;
+}
+
+/* mouse over link */
+a:hover {
+  color: white;
+}
+
+/* selected link */
+a:active {
+  color: white;
+}
