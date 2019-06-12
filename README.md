@@ -13,7 +13,7 @@ Installation
 ------------
 
 ```
-go get github.com/lesterpig/board
+go get github.com/Lesterpig/board
 cp example.yaml board.yaml
 vim board.yaml
 ```

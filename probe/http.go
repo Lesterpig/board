@@ -35,6 +35,7 @@ func (h *HTTP) Init(c Config) error {
 		return err
 	}
 
+	/* #nosec G402 */
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: !opts.VerifyCertificate},
 	}
@@ -58,6 +59,8 @@ func (h *HTTP) Probe() (status Status, message string) {
 	if err != nil {
 		return StatusError, defaultConnectErrorMsg
 	}
+
+	defer func() { _ = res.Body.Close() }()
 
 	if res.StatusCode != 200 {
 		return StatusError, strconv.Itoa(res.StatusCode)

@@ -73,7 +73,8 @@ func (m *Minecraft) Probe() (status Status, message string) {
 	if result.Players.Online == result.Players.Max {
 		status = StatusWarning
 	}
-	return
+
+	return status, message
 }
 
 type minecraftServerStats struct {
@@ -94,7 +95,7 @@ func readVarInt(c io.Reader) (res int, err error) {
 			return 0, err
 		}
 
-		res = res | int((buf[0]&0x7F)<<uint(i*7))
+		res |= int((buf[0] & 0x7F) << uint(i*7))
 		if 0x00 == buf[0]&0x80 {
 			break
 		}

@@ -31,7 +31,7 @@ func (p *Pushbullet) Alert(title, body string) {
 	"type": "note"
 }`)
 
-	_, _ = p.client.Do(&http.Request{
+	res, err := p.client.Do(&http.Request{
 		Method: "POST",
 		URL:    u,
 		Header: map[string][]string{
@@ -40,4 +40,8 @@ func (p *Pushbullet) Alert(title, body string) {
 		},
 		Body: ioutil.NopCloser(r),
 	})
+
+	if err == nil {
+		_ = res.Body.Close()
+	}
 }

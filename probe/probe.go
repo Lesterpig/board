@@ -21,9 +21,9 @@ type Status string
 // These constants represent the different available statuses of a service.
 const (
 	StatusUnknown Status = ""
-	StatusWarning        = "WARNING"
-	StatusError          = "ERROR"
-	StatusOK             = "OK"
+	StatusWarning Status = "WARNING"
+	StatusError   Status = "ERROR"
+	StatusOK      Status = "OK"
 )
 
 const defaultConnectErrorMsg = "Unable to connect"
@@ -35,7 +35,8 @@ type Prober interface {
 }
 
 // EvaluateDuration is a shortcut for warning duration checks.
-// It returns a message containing the duration, and a OK or a WARNING status depending on the provided warning duration.
+// It returns a message containing the duration, and a OK or a WARNING status
+// depending on the provided warning duration.
 func EvaluateDuration(duration time.Duration, warning time.Duration) (status Status, message string) {
 	if duration >= warning {
 		status = StatusWarning

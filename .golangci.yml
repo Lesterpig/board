@@ -1,0 +1,13 @@
+linters-settings:
+  govet:
+    check-shadowing: true
+
+linters:
+  enable-all: true
+  disable:
+    - gochecknoinits
+    - gochecknoglobals
+
+issues:
+  max-per-linter: 0
+  max-same: 0
