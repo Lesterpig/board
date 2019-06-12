@@ -12,6 +12,7 @@ type Service struct {
 	Name    string
 	Status  probe.Status
 	Message string
+	Target  string
 }
 
 // Manager stores several services sorted by categories.

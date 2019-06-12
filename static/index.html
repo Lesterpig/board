@@ -13,18 +13,20 @@
         <span class="info">{{ service.Message }}</span>
 
         <div ng-switch="service.Status">
-          <div ng-switch-when="OK" class="status status-OK">
-            <i class="fa fa-check"></i>
-          </div>
-          <div ng-switch-when="ERROR" class="status status-ERROR">
-            <i class="fa fa-times"></i>
-          </div>
-          <div ng-switch-when="WARNING" class="status status-WARNING">
-            <i class="fa fa-exclamation"></i>
-          </div>
-          <div ng-switch-default class="status status-UNKNOWN">
-            <i class="fa fa-question"></i>
-          </div>
+          <a href="{{ service.Target }}">
+            <div ng-switch-when="OK" class="status status-OK">
+              <i class="fa fa-check"></i>
+            </div>
+            <div ng-switch-when="ERROR" class="status status-ERROR">
+              <i class="fa fa-times"></i>
+            </div>
+            <div ng-switch-when="WARNING" class="status status-WARNING">
+              <i class="fa fa-exclamation"></i>
+            </div>
+            <div ng-switch-default class="status status-UNKNOWN">
+              <i class="fa fa-question"></i>
+            </div>
+          </a>
         </div>
       </div>
 

@@ -70,6 +70,7 @@ func loadConfig() (Manager, error) {
 		manager[c.Category] = append(manager[c.Category], &Service{
 			Prober: prober,
 			Name:   c.Name,
+			Target: c.Target,
 		})
 	}
 
