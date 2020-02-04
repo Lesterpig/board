@@ -6,7 +6,6 @@ import (
 
 	"github.com/Lesterpig/board/alert"
 	"github.com/Lesterpig/board/probe"
-
 	"github.com/spf13/viper"
 )
 
@@ -20,6 +19,7 @@ type serviceConfig struct {
 type alertConfig struct {
 	Type  string
 	Token string
+	Dest  string
 }
 
 var probeConstructors = map[string](func() probe.Prober){
@@ -33,6 +33,9 @@ var probeConstructors = map[string](func() probe.Prober){
 var alertConstructors = map[string](func(c alertConfig) alert.Alerter){
 	"pushbullet": func(c alertConfig) alert.Alerter {
 		return alert.NewPushbullet(c.Token)
+	},
+	"matrix": func(c alertConfig) alert.Alerter {
+		return alert.NewMatrix(c.Token, c.Dest)
 	},
 }
 
