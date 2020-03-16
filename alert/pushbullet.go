@@ -1,10 +1,13 @@
 package alert
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/Lesterpig/board/probe"
 )
 
 // Pushbullet alert container.
@@ -23,11 +26,11 @@ func NewPushbullet(token string) *Pushbullet {
 }
 
 // Alert sends a pushbullet note to the owner of the provided token.
-func (p *Pushbullet) Alert(title, body string) {
+func (p *Pushbullet) Alert(status probe.Status, category, serviceName, message, link, date string) {
 	u, _ := url.Parse("https://api.pushbullet.com/v2/pushes")
 	r := strings.NewReader(`{
-	"title": "` + strings.Replace(title, "\"", "\\\"", -1) + `",
-	"body": "` + strings.Replace(body, "\"", "\\\"", -1) + `",
+	"title": "` + strings.Replace(fmt.Sprintf("%s %s", serviceName, status), "\"", "\\\"", -1) + `",
+	"body": "` + strings.Replace(fmt.Sprintf("%s (%s)", message, date), "\"", "\\\"", -1) + `",
 	"type": "note"
 }`)
 

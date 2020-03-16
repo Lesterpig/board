@@ -2,6 +2,8 @@ package main
 
 import (
 	"errors"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/Lesterpig/board/alert"
@@ -18,8 +20,10 @@ type serviceConfig struct {
 }
 
 type alertConfig struct {
-	Type  string
-	Token string
+	Type    string
+	Token   string
+	Webhook string
+	Channel string
 }
 
 var probeConstructors = map[string](func() probe.Prober){
@@ -34,13 +38,24 @@ var alertConstructors = map[string](func(c alertConfig) alert.Alerter){
 	"pushbullet": func(c alertConfig) alert.Alerter {
 		return alert.NewPushbullet(c.Token)
 	},
+	"slack": func(c alertConfig) alert.Alerter {
+		return alert.NewSlack(c.Webhook, c.Channel)
+	},
 }
 
 var alerters []alert.Alerter
 
-func loadConfig() (Manager, error) {
-	viper.SetConfigName("board")
-	viper.AddConfigPath(".")
+func parseConfigString(cnf string) (dir string, name string) {
+	dir = filepath.Dir(cnf)
+	basename := filepath.Base(cnf)
+	name = strings.TrimSuffix(basename, filepath.Ext(basename))
+	return
+}
+
+func loadConfig(configPath, configName string) (*Manager, error) {
+	viper.SetConfigName(configName)
+	viper.AddConfigPath(configPath)
+
 	err := viper.ReadInConfig()
 	if err != nil {
 		return nil, err
@@ -52,7 +67,8 @@ func loadConfig() (Manager, error) {
 		return nil, err
 	}
 
-	manager := make(Manager)
+	manager := Manager{}
+	manager.Services = make(map[string]([]*Service))
 	for _, c := range sc {
 		constructor := probeConstructors[c.Probe]
 		if constructor == nil {
@@ -67,7 +83,7 @@ func loadConfig() (Manager, error) {
 			return nil, err
 		}
 
-		manager[c.Category] = append(manager[c.Category], &Service{
+		manager.Services[c.Category] = append(manager.Services[c.Category], &Service{
 			Prober: prober,
 			Name:   c.Name,
 			Target: c.Target,
@@ -90,7 +106,7 @@ func loadConfig() (Manager, error) {
 		alerters = append(alerters, constructor(c))
 	}
 
-	return manager, err
+	return &manager, err
 }
 
 func setProbeConfigDefaults(c probe.Config) probe.Config {

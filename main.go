@@ -4,20 +4,29 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
 
 	rice "github.com/GeertJohan/go.rice"
+	"github.com/gobuffalo/envy"
+	"github.com/sirupsen/logrus"
 )
 
 var port = flag.Int("p", 8080, "Port to use")
+var intervalCli = flag.Int("i", 0, "Interval in minutes")
+var configPath = flag.String("f", "./board.yaml", "Path to config file")
+
+var log = logrus.StandardLogger()
 
 func main() {
 	flag.Parse()
-	manager, err := loadConfig()
+	interval := getInterval()
+
+	log.Infof("Probe interval: %d", interval)
+
+	manager, err := loadConfig(parseConfigString(*configPath))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -33,6 +42,24 @@ func main() {
 		_, _ = w.Write(data)
 	})
 
-	go manager.ProbeLoop(10 * time.Minute)
+	go manager.ProbeLoop(time.Duration(int64(interval)) * time.Minute)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
+}
+
+func getInterval() int {
+	intervalEnv := getInt(envy.Get("INTERVAL", ""))
+	if *intervalCli != 0 {
+		return *intervalCli
+	} else if intervalEnv != 0 {
+		return intervalEnv
+	}
+	return 10
+}
+
+func getInt(s string) int {
+	i, err := strconv.ParseInt(s, 10, 0)
+	if nil != err {
+		return 0
+	}
+	return int(i)
 }
