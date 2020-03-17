@@ -5,6 +5,7 @@ linters-settings:
 linters:
   enable-all: true
   disable:
+    - gomnd
     - gochecknoinits
     - gochecknoglobals
 

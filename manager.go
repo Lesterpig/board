@@ -24,6 +24,7 @@ type Manager struct {
 // ProbeLoop starts the main loop that will call ProbeAll regularly.
 func (manager *Manager) ProbeLoop(interval time.Duration) {
 	manager.ProbeAll()
+
 	c := time.Tick(interval)
 	for range c {
 		manager.ProbeAll()
@@ -34,7 +35,9 @@ func (manager *Manager) ProbeLoop(interval time.Duration) {
 // Everything is done asynchronously.
 func (manager *Manager) ProbeAll() {
 	log.Debug("Probing all")
+
 	manager.LastUpdate = time.Now()
+
 	for category, services := range manager.Services {
 		for _, service := range services {
 			go func(category string, service *Service) {
@@ -57,6 +60,7 @@ func (manager *Manager) ProbeAll() {
 // It uses global configuration for list of alert (`A` variable).
 func AlertAll(category string, service *Service) {
 	date := time.Now().Format("15:04:05 MST")
+
 	for _, alert := range alerters {
 		alert.Alert(service.Status, category, service.Name, service.Message, service.Target, date)
 	}

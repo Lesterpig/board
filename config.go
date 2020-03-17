@@ -49,6 +49,7 @@ func parseConfigString(cnf string) (dir string, name string) {
 	dir = filepath.Dir(cnf)
 	basename := filepath.Base(cnf)
 	name = strings.TrimSuffix(basename, filepath.Ext(basename))
+
 	return
 }
 
@@ -62,6 +63,7 @@ func loadConfig(configPath, configName string) (*Manager, error) {
 	}
 
 	sc := make([]serviceConfig, 0)
+
 	err = viper.UnmarshalKey("services", &sc)
 	if err != nil {
 		return nil, err
@@ -69,6 +71,7 @@ func loadConfig(configPath, configName string) (*Manager, error) {
 
 	manager := Manager{}
 	manager.Services = make(map[string]([]*Service))
+
 	for _, c := range sc {
 		constructor := probeConstructors[c.Probe]
 		if constructor == nil {
@@ -78,6 +81,7 @@ func loadConfig(configPath, configName string) (*Manager, error) {
 		c.Config = setProbeConfigDefaults(c.Config)
 
 		prober := constructor()
+
 		err = prober.Init(c.Config)
 		if err != nil {
 			return nil, err
@@ -91,12 +95,14 @@ func loadConfig(configPath, configName string) (*Manager, error) {
 	}
 
 	ac := make([]alertConfig, 0)
+
 	err = viper.UnmarshalKey("alerts", &ac)
 	if err != nil {
 		return nil, err
 	}
 
 	alerters = make([]alert.Alerter, 0)
+
 	for _, c := range ac {
 		constructor := alertConstructors[c.Type]
 		if constructor == nil {

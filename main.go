@@ -22,6 +22,7 @@ var log = logrus.StandardLogger()
 
 func main() {
 	flag.Parse()
+
 	interval := getInterval()
 
 	log.Infof("Probe interval: %d", interval)
@@ -48,11 +49,13 @@ func main() {
 
 func getInterval() int {
 	intervalEnv := getInt(envy.Get("INTERVAL", ""))
+
 	if *intervalCli != 0 {
 		return *intervalCli
 	} else if intervalEnv != 0 {
 		return intervalEnv
 	}
+
 	return 10
 }
 
@@ -61,5 +64,6 @@ func getInt(s string) int {
 	if nil != err {
 		return 0
 	}
+
 	return int(i)
 }

@@ -43,6 +43,8 @@ func EvaluateDuration(duration time.Duration, warning time.Duration) (status Sta
 	} else {
 		status = StatusOK
 	}
+
 	message = fmt.Sprintf("%d ms", duration.Nanoseconds()/1000000)
+
 	return
 }

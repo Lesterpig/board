@@ -29,7 +29,9 @@ type HTTPOptions struct {
 // Init configures the probe.
 func (h *HTTP) Init(c Config) error {
 	h.Config = c
+
 	var opts HTTPOptions
+
 	err := mapstructure.Decode(c.Options, &opts)
 	if err != nil {
 		return err
@@ -45,6 +47,7 @@ func (h *HTTP) Init(c Config) error {
 		Transport: tr,
 	}
 	h.regex, err = regexp.Compile(opts.Regex)
+
 	return err
 }
 

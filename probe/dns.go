@@ -17,6 +17,7 @@ type DNS struct {
 func (d *DNS) Init(c Config) error {
 	err := mapstructure.Decode(c.Options, d)
 	d.Config = c
+
 	return err
 }
 
@@ -29,6 +30,7 @@ func (d *DNS) Probe() (status Status, message string) {
 
 	c := new(dns.Client)
 	r, rtt, err := c.Exchange(m, d.Target+":53")
+
 	if err != nil {
 		return StatusError, err.Error()
 	}

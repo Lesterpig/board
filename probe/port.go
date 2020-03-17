@@ -15,6 +15,7 @@ type Port struct {
 // Init configures the probe.
 func (p *Port) Init(c Config) error {
 	p.Config = c
+
 	u, err := url.Parse(p.Target)
 	if err != nil {
 		return err
@@ -22,6 +23,7 @@ func (p *Port) Init(c Config) error {
 
 	p.network = u.Scheme
 	p.addrport = u.Host
+
 	return nil
 }
 
@@ -30,11 +32,13 @@ func (p *Port) Init(c Config) error {
 // Otherwise, an error message is returned.
 func (p *Port) Probe() (status Status, message string) {
 	start := time.Now()
+
 	conn, err := net.DialTimeout(p.network, p.addrport, p.Fatal)
 	if err != nil {
 		return StatusError, defaultConnectErrorMsg
 	}
 
 	_ = conn.Close()
+
 	return EvaluateDuration(time.Since(start), p.Warning)
 }

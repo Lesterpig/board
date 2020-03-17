@@ -24,22 +24,26 @@ func (s *SMTP) Init(c Config) error {
 // Otherwise, an error message is returned.
 func (s *SMTP) Probe() (status Status, message string) {
 	start := time.Now()
+
 	conn, err := net.DialTimeout("tcp", s.Target, s.Fatal)
 	if err != nil {
 		return StatusError, defaultConnectErrorMsg
 	}
 
 	defer func() { _ = conn.Close() }()
+
 	host, _, _ := net.SplitHostPort(s.Target)
 	secure := tls.Client(conn, &tls.Config{
 		ServerName: host,
 	})
 
 	data := make([]byte, 4)
+
 	_, err = secure.Read(data)
 	if err != nil {
 		return StatusError, "TLS Error"
 	}
+
 	if fmt.Sprintf("%s", data) != "220 " {
 		return StatusError, "Unexpected reply"
 	}
