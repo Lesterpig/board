@@ -15,7 +15,9 @@ func TestHTTPSuccess(t *testing.T) {
 		Fatal:   10 * time.Second,
 		Options: map[string]interface{}{"Regex": "Loïck"},
 	}))
+
 	s, m := h.Probe()
+
 	assert.True(t, StatusOK == s)
 	t.Log(m)
 }
@@ -27,7 +29,9 @@ func TestHTTPWarning(t *testing.T) {
 		Warning: time.Microsecond,
 		Fatal:   10 * time.Second,
 	}))
+
 	s, _ := h.Probe()
+
 	assert.True(t, StatusWarning == s)
 }
 
@@ -38,7 +42,9 @@ func TestHTTP404(t *testing.T) {
 		Warning: 5 * time.Second,
 		Fatal:   10 * time.Second,
 	}))
+
 	s, _ := h.Probe()
+
 	assert.True(t, StatusError == s)
 }
 
@@ -49,7 +55,9 @@ func TestHTTPError(t *testing.T) {
 		Warning: 5 * time.Second,
 		Fatal:   10 * time.Second,
 	}))
+
 	s, _ := h.Probe()
+
 	assert.True(t, StatusError == s)
 }
 
@@ -60,7 +68,9 @@ func TestHTTPTimeout(t *testing.T) {
 		Warning: 5 * time.Second,
 		Fatal:   time.Microsecond,
 	}))
+
 	s, _ := h.Probe()
+
 	assert.True(t, StatusError == s)
 }
 
@@ -72,7 +82,9 @@ func TestHTTPUnexpected(t *testing.T) {
 		Fatal:   10 * time.Second,
 		Options: map[string]interface{}{"Regex": "Unexpected"},
 	}))
+
 	s, m := h.Probe()
+
 	assert.True(t, StatusError == s)
-	assert.True(t, "Unexpected result" == m)
+	assert.True(t, m == "Unexpected result")
 }

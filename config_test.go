@@ -21,6 +21,7 @@ func Test_parseConfigString(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.args, func(t *testing.T) {
 			gotDir, gotName := parseConfigString(tt.args)
 			if gotDir != tt.wantDir {

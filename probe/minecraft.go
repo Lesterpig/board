@@ -28,6 +28,7 @@ func (m *Minecraft) Probe() (status Status, message string) {
 	if err != nil {
 		return StatusError, defaultConnectErrorMsg
 	}
+
 	defer func() { _ = conn.Close() }()
 
 	// Handshake
@@ -40,6 +41,7 @@ func (m *Minecraft) Probe() (status Status, message string) {
 		0x00,
 		0x01, // Ask for status
 	}
+
 	_, err = conn.Write(handshake)
 	if err != nil {
 		return StatusError, "Error during handshake"
@@ -47,15 +49,17 @@ func (m *Minecraft) Probe() (status Status, message string) {
 
 	// Status
 	stat := []byte{0x01, 0x00}
+
 	_, err = conn.Write(stat)
 	if err != nil {
 		return StatusError, "Error during status"
 	}
 
 	// Result
-	_, _ = readVarInt(conn) // Packet length
-	_, _ = readVarInt(conn) // PacketID
+	_ = readVarInt(conn) // Packet length
+	_ = readVarInt(conn) // PacketID
 	data := make([]byte, 10000)
+
 	read, err := conn.Read(data)
 	if err != nil || read < 2 {
 		return StatusError, "No stat received"
@@ -63,6 +67,7 @@ func (m *Minecraft) Probe() (status Status, message string) {
 
 	// Try to parse data
 	result := new(minecraftServerStats)
+
 	err = json.Unmarshal(data[2:read], result)
 	if err != nil {
 		return StatusError, "Invalid stats"
@@ -70,6 +75,7 @@ func (m *Minecraft) Probe() (status Status, message string) {
 
 	message = fmt.Sprintf("%d / %d - %s", result.Players.Online, result.Players.Max, result.Version.Name)
 	status = StatusOK
+
 	if result.Players.Online == result.Players.Max {
 		status = StatusWarning
 	}
@@ -87,18 +93,24 @@ type minecraftServerStats struct {
 	} `json:"players"`
 }
 
-func readVarInt(c io.Reader) (res int, err error) {
+func readVarInt(c io.Reader) (err error) {
 	buf := []byte{0x00}
+	res := 0
+
 	for i := 0; i < 5; i++ {
 		_, err := c.Read(buf)
 		if err != nil {
-			return 0, err
+			return err
 		}
 
 		res |= int((buf[0] & 0x7F) << uint(i*7))
-		if 0x00 == buf[0]&0x80 {
+
+		if buf[0]&0x80 == 0x00 {
 			break
 		}
 	}
+
+	_ = res
+
 	return
 }
