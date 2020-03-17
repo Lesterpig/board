@@ -60,6 +60,12 @@ h1 {
   background-color: #D0C6B1;
 }
 
+
+.lastupdate {
+  font-size: 100px;
+  color: #204237;
+
+}
 /* Animations */
 
 @keyframes blink {
