@@ -11,6 +11,7 @@ import (
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/gobuffalo/envy"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 )
 
@@ -42,6 +43,8 @@ func main() {
 		data, _ := json.Marshal(manager)
 		_, _ = w.Write(data)
 	})
+
+	http.Handle("/metrics", promhttp.Handler())
 
 	go manager.ProbeLoop(time.Duration(int64(interval)) * time.Minute)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
