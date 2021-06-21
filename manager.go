@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math"
 	"time"
 
 	"github.com/Lesterpig/board/probe"
@@ -38,8 +39,17 @@ func (manager *Manager) ProbeAll() {
 
 	manager.LastUpdate = time.Now()
 
+	i := 0.0
+
 	for category, services := range manager.Services {
 		for _, service := range services {
+			// Batching the probes to spread the workload
+			if math.Mod(i, 8) == 0 {
+				log.Debug("Waiting")
+				time.Sleep(2 * time.Second)
+				i = 0
+			}
+			i++
 			go func(category string, service *Service) {
 				prevStatus := service.Status
 				service.Status, service.Message = service.Prober.Probe()
