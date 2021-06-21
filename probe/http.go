@@ -2,8 +2,10 @@ package probe
 
 import (
 	"crypto/tls"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptrace"
 	"regexp"
 	"strconv"
 	"time"
@@ -38,9 +40,11 @@ func (h *HTTP) Init(c Config) error {
 	}
 
 	/* #nosec G402 */
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: !opts.VerifyCertificate},
-	}
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+	tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	// Disable keep alive to get more consistent measurements
+	tr.DisableKeepAlives = true
+	tr.ResponseHeaderTimeout = c.Fatal
 
 	h.client = &http.Client{
 		Timeout:   c.Fatal,
@@ -55,17 +59,39 @@ func (h *HTTP) Init(c Config) error {
 // If the operation succeeds, the message will be the duration of the HTTP request in ms.
 // Otherwise, an error message is returned.
 func (h *HTTP) Probe() (status Status, message string) {
-	start := time.Now()
-	res, err := h.client.Get(h.Target)
-	duration := time.Since(start)
+
+	req, _ := http.NewRequest("GET", h.Target, nil)
+
+	var server, start time.Time
+	var initDuration, serverDuration, totalDuration time.Duration
+
+	trace := &httptrace.ClientTrace{
+
+		TLSHandshakeDone: func(cs tls.ConnectionState, err error) {
+			server = time.Now()
+			initDuration = time.Since(start)
+		},
+	}
+
+	req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
+	// Starting timer
+	start = time.Now()
+	// Set server time before request. This may be reset in TLSHandshakeDone if a TLSHandshake is preformed
+	server = start
+
+	res, err := h.client.Transport.RoundTrip(req)
+	totalDuration = time.Since(start)
+	serverDuration = time.Since(server)
+
+	if res != nil {
+		defer res.Body.Close() // MUST CLOSED THIS
+	}
 
 	if err != nil {
 		return StatusError, defaultConnectErrorMsg
 	}
 
-	defer func() { _ = res.Body.Close() }()
-
-	if res.StatusCode != 200 {
+	if !(res.StatusCode >= 200 && res.StatusCode <= 399) {
 		return StatusError, strconv.Itoa(res.StatusCode)
 	}
 
@@ -74,5 +100,20 @@ func (h *HTTP) Probe() (status Status, message string) {
 		return StatusError, "Unexpected result"
 	}
 
-	return EvaluateDuration(duration, h.Warning)
+	return AdvancedEvaluateDuration(initDuration, serverDuration, totalDuration, h.Warning)
+}
+
+// AdvancedEvaluateDuration is a shortcut for warning duration checks.
+// It returns a message containing the duration, and a OK or a WARNING status
+// depending on the provided warning duration.
+func AdvancedEvaluateDuration(initDuration, serverDuration, duration time.Duration, warning time.Duration) (status Status, message string) {
+	if duration >= warning {
+		status = StatusWarning
+	} else {
+		status = StatusOK
+	}
+
+	message = fmt.Sprintf("%d ms / %d ms", initDuration.Nanoseconds()/1000000, serverDuration.Nanoseconds()/1000000)
+
+	return
 }

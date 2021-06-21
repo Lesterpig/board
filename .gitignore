@@ -1,2 +1,4 @@
 /board
 /board.yaml
+bin/*
+tmp/*

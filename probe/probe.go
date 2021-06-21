@@ -4,7 +4,11 @@ package probe
 import (
 	"fmt"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
+
+var log = logrus.StandardLogger()
 
 // Config holds probe configuration, submitted through Init methods.
 type Config struct {
