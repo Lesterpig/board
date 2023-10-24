@@ -12,10 +12,12 @@ import (
 )
 
 type Config struct {
+	LoopInterval time.Duration
 	AutoDiscover AutoDiscoverConfig
 	Probes       []probe.Config
 	Alerts       []alert.AlertConfig
 }
+
 type AutoDiscoverConfig struct {
 	Ingres bool
 }
@@ -40,7 +42,7 @@ func loadConfig(configPath, configName string) (*Config, error) {
 	err = viper.UnmarshalKey("Probes", &sc)
 
 	adc := AutoDiscoverConfig{}
-	err = viper.UnmarshalKey("autodiscover", &adc)
+	err = viper.UnmarshalKey("AutoDiscover", &adc)
 
 	ac := make([]alert.AlertConfig, 0)
 	err = viper.UnmarshalKey("Alerts", &ac)

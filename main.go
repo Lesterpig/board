@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"flag"
 	rice "github.com/GeertJohan/go.rice"
-	"github.com/gobuffalo/envy"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
@@ -20,10 +19,6 @@ var log = logrus.StandardLogger()
 
 func main() {
 	flag.Parse()
-
-	interval := getInterval()
-
-	log.Infof("probe interval: %d", interval)
 
 	config, err := loadConfig(parseConfigString(*configPath))
 	if err != nil {
@@ -45,27 +40,15 @@ func main() {
 		_, _ = w.Write(data)
 	})
 
-	go manager.ProbeLoop(time.Duration(int64(interval)) * time.Minute)
+	go manager.ProbeLoop(getLoopInterval(config.LoopInterval))
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
 }
 
-func getInterval() int {
-	intervalEnv := getInt(envy.Get("INTERVAL", ""))
-
-	if *intervalCli != 0 {
-		return *intervalCli
-	} else if intervalEnv != 0 {
-		return intervalEnv
+func getLoopInterval(duration time.Duration) time.Duration {
+	if duration == 0 {
+		log.Info("Using default interval of 10 minutes")
+		return time.Minute * 10
 	}
-
-	return 10
-}
-
-func getInt(s string) int {
-	i, err := strconv.ParseInt(s, 10, 0)
-	if nil != err {
-		return 0
-	}
-
-	return int(i)
+	log.Info("Using default interval of %v", duration)
+	return duration
 }
