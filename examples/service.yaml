@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tcs-board
+  labels:
+    app: tcs-board
+spec:
+  selector:
+    app: tcs-board
+  ports:
+    - port: 8080
+      targetPort: http
+      name: http

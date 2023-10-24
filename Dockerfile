@@ -1,4 +1,4 @@
-FROM golang:1.20.5-alpine AS build-env
+FROM golang:1.20.5-alpine AS builder
 
 # Dependencies
 WORKDIR /build
@@ -12,8 +12,10 @@ RUN CGO_ENABLED=0 go build -ldflags '-w -s' -o /board
 RUN rice append --exec /board
 
 # Build runtime container
-FROM alpine:3.18.4
-WORKDIR /app
-COPY --from=build-env /board /app/board
+FROM scratch
+COPY --chown=1000:1000 --from=builder /board /board
+
+USER 1000:1000
 EXPOSE 8080
-CMD ["/app/board"]
+
+CMD ["/board"]

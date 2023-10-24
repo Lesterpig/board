@@ -1,0 +1,48 @@
+name: Continuous Delivery
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "New tag name in semver format (x.y.z)"
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          # fetch-depth=0 is required to make the changelog work
+          fetch-depth: 0
+
+      - run: git tag ${{ github.event.inputs.tag }} # for GoReleaser
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: "./go.mod"
+
+      - name: Install Rice
+        run: go install github.com/GeertJohan/go.rice/rice@latest
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3.0.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v5
+        with:
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,29 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcs-board
+spec:
+  selector:
+    matchLabels:
+      app: tcs-board
+  template:
+    metadata:
+      labels:
+        app: tcs-board
+    spec:
+      containers:
+        - name: tcs-board
+          image: tcs-board:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+              name: http
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: board-config

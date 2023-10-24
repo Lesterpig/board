@@ -1,0 +1,54 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "**"
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    cancel-timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: "./go.mod"
+          cache: false # golangci-lint needs to make use of its own cache
+
+      - name: Go lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.54
+          only-new-issues: true
+          args: --enable gofmt
+
+      - name: Go tidy
+        shell: bash
+        run: |-
+          go mod tidy
+          git diff --exit-code -- go.mod go.sum
+
+  test:
+    runs-on: ubuntu-latest
+    cancel-timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: "./go.mod"
+
+      - name: Go tests
+        run: go test ./...

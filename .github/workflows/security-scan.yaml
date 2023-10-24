@@ -1,0 +1,48 @@
+name: Security Scan
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "**"
+  schedule:
+    - cron: "0 0 * * 0" # every sunday at 00:00
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    cancel-timeout-minutes: 10
+    env:
+      GO111MODULE: on
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: "./go.mod"
+
+      - name: Run Gosec Security Scanner
+        uses: securego/gosec@master
+        env:
+          # https://github.com/securego/gosec/issues/776
+          GOROOT: ""
+        with:
+          args: "./..."
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          format: "table"
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: "library"
+          image-ref: "." # required, but not used when scan-type=fs
