@@ -40,11 +40,12 @@ coverage: ## Generate test coverage report
 	go test ./... -coverprofile=tmp/coverage.out
 	go tool cover -func=tmp/coverage.out
 
-build: ## Build the binary to build/server
-	CGO_ENABLED=0 go build -o build/server ./server.go
+build: ## Build the binary to build/main
+	CGO_ENABLED=0 go build -o build/main ./main.go
+	$(RICE) append --exec /board
 
 run: ## Run the program
-	go run server.go
+	go run main.go
 
 tidy: ## Run go mod tidy
 	go mod tidy

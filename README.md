@@ -1,42 +1,52 @@
-Board [![Build Status](https://travis-ci.org/Lesterpig/board.svg?branch=master)](https://travis-ci.org/Lesterpig/board)
-=======================================================================================================================
+# TCS Status Board
 
 > One dashboard to check them all.
 
-This repository contains a small web server used to provide a very accurate status *for all your systems*. It also supports live alerts when a service goes down.
+This repository contains a small web server used to provide a very accurate status *for all your systems*.
+It also supports live alerts when a service goes down.
 
 With just a glance, you'll be able to spot the faulty parts of your infrastructure.
 
 ![Screenshot](screenshot.png "Screenshot")
 
-Installation
-------------
+This project is forked from [`Lesterpig/board`](https://github.com/Lesterpig/board) and modified to fit the needs of the Trifork Cloud Stack.
 
-```
-go get github.com/Lesterpig/board
-cp example.yaml board.yaml
-vim board.yaml
-```
+## Installation
 
-Docker Build
-------------
-After installation the board can be build as a docker image.
+GoReleaser is used to build and release the binaries and Docker containers.
+You can find the latest release [here](https://github.com/trifork/tcs-status/releases), and the latest container image [here](https://github.com/trifork/tcs-status/pkgs/container/tcs-status).
+
+To run the board, you need to create a `board.yaml` file.
+You can find an example in the repository in [`examples/board.yaml`](./examples/board.yaml).
+
+This needs to be placed in the same directory as where you run the board from.
+To mount the file into the container and expose the board on port 8080, you can use the following command:
 
 ```bash
-# Building image
-docker build -t lesterpig/board .
-# Running container with board.yaml from current dir
-docker run -p 8080:8080 -v ${PWD}/board.yaml:/app/board.yaml lesterpig/board
+docker run -v "${PWD}"/board.yaml:/board.yaml:ro -p 8080:8080 ghcr.io/trifork/tcs-board:latest
 ```
 
-Build single binary
--------------------
+In [`examples/`](./examples/), you will find Kubernetes manifests to deploy the board to a Kubernetes cluster, which makes use of a ConfigMap containing the `board.yaml` file.
 
-You may want to include the `/static/` directory as a ZIP resource in your binary.
+## Development
 
-```
-go build -ldflags "-s -w" .
-rice append --exec board
-```
+We have added a Makefile to simplify the development process.
+You can use `make build` to build the binary, and `make run` to run the board locally.
 
-Documentation: https://github.com/GeertJohan/go.rice#append
+We make use of [`rice`](https://github.com/GeertJohan/go.rice) to embed the static files in [static/](./static/) into the binary.
+When running `make build`, the static files will be embedded into the built binary.
+When running `make run`, the static files will be served directly from the [static/](./static/) directory.
+
+To build the Docker container, you can use `make image`.
+This will create a container image tagged with `tcs-board:latest`, which can be run using `docker run  -v "${PWD}/examples/board.yaml:/board.yaml:ro" -p 8080:8080 ghcr.io/trifork/tcs-board:0.0.1-next`.
+
+To deploy the container to a Kubernetes cluster, you can use `make deploy`.
+This will create a local Kubernetes cluster using [k3d](https://k3d.io), and deploy the board to it.
+
+Any binaries used in the Makefile are installed using `go install` and can be found in `bin/`.
+
+## Release
+
+We use [GoReleaser](https://github.com/goreleaser/goreleaser) to release new versions of the tool in binary format to Github Releases and built to Docker containers to [`ghcr.io/trifork/tcs-board`](https://github.com/trifork/tcs-board/pkgs/container/tcs-board).
+
+To release a new version, manually trigger the [Continuous Delivery workflow](https://github.com/trifork/tcs-board/actions/workflows/release.yaml) with a new version in SemVer format (`x.y.z`)
