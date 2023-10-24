@@ -1,4 +1,4 @@
-package main
+package config
 
 import "testing"
 
@@ -23,7 +23,7 @@ func Test_parseConfigString(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.args, func(t *testing.T) {
-			gotDir, gotName := parseConfigString(tt.args)
+			gotDir, gotName := ParseConfigString(tt.args)
 			if gotDir != tt.wantDir {
 				t.Errorf("parseConfigString() gotDir = %v, want %v", gotDir, tt.wantDir)
 			}

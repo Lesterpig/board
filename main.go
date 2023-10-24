@@ -3,12 +3,14 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	rice "github.com/GeertJohan/go.rice"
-	"github.com/sirupsen/logrus"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
+
+	rice "github.com/GeertJohan/go.rice"
+	"github.com/Lesterpig/board/config"
+	"github.com/Lesterpig/board/manager"
+	"github.com/sirupsen/logrus"
 )
 
 var port = flag.Int("p", 8080, "Port to use")
@@ -20,14 +22,15 @@ var log = logrus.StandardLogger()
 func main() {
 	flag.Parse()
 
-	config, err := loadConfig(parseConfigString(*configPath))
+	cfgDir, cfgName := config.ParseConfigString(*configPath)
+	config, err := config.LoadConfig(cfgDir, cfgName, log)
 	if err != nil {
-		log.Fatal(os.Stderr, err)
+		log.Fatal("Error loading config file: ", err)
 	}
-	manager, err := NewManager(config)
 
+	manager, err := manager.NewManager(config, log)
 	if err != nil {
-		log.Fatal(os.Stderr, err)
+		log.Fatal("Error initializing new manager: ", err)
 	}
 
 	// Setup static folder
@@ -49,6 +52,6 @@ func getLoopInterval(duration time.Duration) time.Duration {
 		log.Info("Using default interval of 10 minutes")
 		return time.Minute * 10
 	}
-	log.Info("Using default interval of %v", duration)
+	log.Info("Using default interval of ", duration)
 	return duration
 }

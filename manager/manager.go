@@ -1,9 +1,12 @@
-package main
+package manager
 
 import (
 	"errors"
-	"github.com/Lesterpig/board/alert"
 	"time"
+
+	"github.com/Lesterpig/board/alert"
+	"github.com/Lesterpig/board/config"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Lesterpig/board/probe"
 )
@@ -19,22 +22,25 @@ type Service struct {
 
 // Manager stores several Services sorted by categories.
 type Manager struct {
+	Logger     *logrus.Logger        `json:"-"`
 	LastUpdate time.Time             `json:"LastUpdate"`
 	Services   map[string][]*Service `json:"Probes,omitempty"`
 	Alerts     []alert.Alerter       `json:"Alerts,omitempty"`
 }
 
-func NewManager(config *Config) (*Manager, error) {
-	manager := Manager{}
+func NewManager(cfg *config.Config, log *logrus.Logger) (*Manager, error) {
+	manager := Manager{
+		Logger: log,
+	}
 
 	manager.Services = make(map[string][]*Service)
-	for _, c := range config.Probes {
+	for _, c := range cfg.Probes {
 		probeConstructor := probe.ProbeConstructors[c.Type]
 		if probeConstructor == nil {
 			return nil, errors.New("unknown probe type: " + c.Type)
 		}
 
-		c.Config = setProbeConfigDefaults(c.Config)
+		c.Config = config.SetProbeConfigDefaults(c.Config)
 
 		prober := probeConstructor()
 
@@ -50,8 +56,8 @@ func NewManager(config *Config) (*Manager, error) {
 		})
 	}
 
-	manager.Alerts = make([]alert.Alerter, len(config.Alerts))
-	for _, c := range config.Alerts {
+	manager.Alerts = make([]alert.Alerter, len(cfg.Alerts))
+	for _, c := range cfg.Alerts {
 		constructor := alert.AlertConstructors[c.Type]
 		if constructor == nil {
 			return nil, errors.New("unknown alert type: " + c.Type)
@@ -81,7 +87,7 @@ func (m *Manager) ProbeLoop(interval time.Duration) {
 // ProbeAll triggers the probe function for each registered service in the manager.
 // Everything is done asynchronously.
 func (m *Manager) probeAll() {
-	log.Debug("Probing all")
+	m.Logger.Debug("Probing all")
 
 	m.LastUpdate = time.Now()
 

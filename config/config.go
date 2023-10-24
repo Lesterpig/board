@@ -1,10 +1,12 @@
-package main
+package config
 
 import (
-	"github.com/Lesterpig/board/alert"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/Lesterpig/board/alert"
+	"github.com/sirupsen/logrus"
 
 	"github.com/Lesterpig/board/probe"
 
@@ -22,14 +24,14 @@ type AutoDiscoverConfig struct {
 	Ingres bool
 }
 
-func parseConfigString(cnf string) (dir string, name string) {
+func ParseConfigString(cnf string) (dir string, name string) {
 	dir = filepath.Dir(cnf)
 	basename := filepath.Base(cnf)
 	name = strings.TrimSuffix(basename, filepath.Ext(basename))
 	return
 }
 
-func loadConfig(configPath, configName string) (*Config, error) {
+func LoadConfig(configPath, configName string, log *logrus.Logger) (*Config, error) {
 	viper.SetConfigName(configName)
 	viper.AddConfigPath(configPath)
 
@@ -40,12 +42,21 @@ func loadConfig(configPath, configName string) (*Config, error) {
 
 	sc := make([]probe.Config, 0)
 	err = viper.UnmarshalKey("Probes", &sc)
+	if err != nil {
+		return nil, err
+	}
 
 	adc := AutoDiscoverConfig{}
 	err = viper.UnmarshalKey("AutoDiscover", &adc)
+	if err != nil {
+		return nil, err
+	}
 
 	ac := make([]alert.AlertConfig, 0)
 	err = viper.UnmarshalKey("Alerts", &ac)
+	if err != nil {
+		return nil, err
+	}
 
 	conf := &Config{
 		AutoDiscover: adc,
@@ -64,7 +75,7 @@ func loadConfig(configPath, configName string) (*Config, error) {
 
 }
 
-func setProbeConfigDefaults(c probe.ProberConfig) probe.ProberConfig {
+func SetProbeConfigDefaults(c probe.ProberConfig) probe.ProberConfig {
 	if c.Warning == 0 {
 		c.Warning = 500 * time.Millisecond
 	}
