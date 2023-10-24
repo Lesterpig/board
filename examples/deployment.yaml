@@ -21,7 +21,8 @@ spec:
               name: http
           volumeMounts:
             - name: config
-              mountPath: /config
+              mountPath: /board.yaml
+              subPath: board.yaml
               readOnly: true
       volumes:
         - name: config

@@ -24,6 +24,7 @@ go.work
 bin/
 tmp/
 build/
+dist/
 
 /board
 /board.yaml

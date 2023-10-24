@@ -11,11 +11,11 @@ changelog:
       - "^docs"
 
 builds:
-  - main: ./cmd/
+  - main: .
     env:
       - CGO_ENABLED=0
     hooks:
-      post: rice append --exec /board
+      post: rice append --exec {{ .Path }}
     goos:
       - linux
       - windows

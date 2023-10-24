@@ -9,7 +9,7 @@ help: ## Display this help
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n\nTargets:\n"} /^[a-zA-Z0-9_-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 
 cluster: k3d ## Create a k3d cluster
-	KUBECONFIG="$(kubeconfig)" $(K3D) cluster create $(cluster-name) -p "8081:80@loadbalancer" --agents 2
+	KUBECONFIG="$(kubeconfig)" $(K3D) cluster create $(cluster-name) -p "8081:80@loadbalancer" --agents 2 2> /dev/null | true
 
 delete-cluster: k3d ## Delete the k3d cluster
 	KUBECONFIG="$(kubeconfig)" $(K3D) cluster delete $(cluster-name)
@@ -17,11 +17,11 @@ delete-cluster: k3d ## Delete the k3d cluster
 image: ## Build a docker image
 	docker build -t $(image-name):latest .
 
-load-image: image ## Load the locally built image into k3d
+load-image: image cluster ## Load the locally built image into k3d
 	KUBECONFIG="$(kubeconfig)" $(K3D) image import $(image-name):latest --cluster $(cluster-name)
 
-deploy: kustomize ## Apply manifests in examples/ to Kubernetes
-	$(KUSTOMIZE) build examples | kubectl apply -f - --kubeconfig="$(kubeconfig)"
+deploy: cluster ## Apply manifests in examples/ to Kubernetes
+	kubectl apply -k examples/ --kubeconfig="$(kubeconfig)"
 
 secure: gosec ## Run gosec
 	$(GOSEC) -terse ./...
@@ -62,7 +62,6 @@ $(LOCALBIN):
 
 ## Tool binaries
 K3D ?= $(LOCALBIN)/k3d
-KUSTOMIZE ?= $(LOCALBIN)/kustomize
 GOSEC ?= $(LOCALBIN)/gosec
 GOLANGCILINT ?= $(LOCALBIN)/golangci-lint
 RICE ?= $(LOCALBIN)/rice
@@ -71,11 +70,6 @@ RICE ?= $(LOCALBIN)/rice
 k3d: $(K3D) ## Download k3d
 $(K3D): $(LOCALBIN)
 	test -s $(LOCALBIN)/k3d || GOBIN=$(LOCALBIN) go install github.com/k3d-io/k3d/v5@latest
-
-.PHONY: kustomize
-kustomize: $(KUSTOMIZE) ## Download kustomize
-$(KUSTOMIZE): $(LOCALBIN)
-	test -s $(LOCALBIN)/kustomize || GOBIN=$(LOCALBIN) go install sigs.k8s.io/kustomize/kustomize/v5@latest
 
 .PHONY: gosec
 gosec: $(GOSEC) ## Download gosec
