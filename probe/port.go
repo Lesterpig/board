@@ -8,13 +8,13 @@ import (
 
 // Port Probe, used to check if a port is open or not.
 type Port struct {
-	Config
+	ProberConfig
 	network, addrport string
 }
 
 // Init configures the probe.
-func (p *Port) Init(c Config) error {
-	p.Config = c
+func (p *Port) Init(c ProberConfig) error {
+	p.ProberConfig = c
 
 	u, err := url.Parse(p.Target)
 	if err != nil {

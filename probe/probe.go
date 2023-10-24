@@ -6,13 +6,19 @@ import (
 	"time"
 )
 
-// Config holds probe configuration, submitted through Init methods.
-type Config struct {
+// ProberConfig holds prober configuration, submitted through Init methods.
+type ProberConfig struct {
 	Target  string
 	Options map[string]interface{}
 
 	Warning time.Duration
 	Fatal   time.Duration
+}
+
+// Prober is the base interface that each probe must implement.
+type Prober interface {
+	Init(ProberConfig) error
+	Probe() (status Status, message string)
 }
 
 // Status represents the current status of a monitored service.
@@ -27,12 +33,6 @@ const (
 )
 
 const defaultConnectErrorMsg = "Unable to connect"
-
-// Prober is the base interface that each probe must implement.
-type Prober interface {
-	Init(Config) error
-	Probe() (status Status, message string)
-}
 
 // EvaluateDuration is a shortcut for warning duration checks.
 // It returns a message containing the duration, and a OK or a WARNING status

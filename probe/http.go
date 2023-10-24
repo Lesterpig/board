@@ -13,7 +13,7 @@ import (
 
 // HTTP Probe, used to check HTTP(S) websites status.
 type HTTP struct {
-	Config
+	ProberConfig
 	client *http.Client
 	regex  *regexp.Regexp
 }
@@ -27,8 +27,8 @@ type HTTPOptions struct {
 }
 
 // Init configures the probe.
-func (h *HTTP) Init(c Config) error {
-	h.Config = c
+func (h *HTTP) Init(c ProberConfig) error {
+	h.ProberConfig = c
 
 	var opts HTTPOptions
 

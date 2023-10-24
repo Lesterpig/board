@@ -9,14 +9,14 @@ import (
 // `domain` will be resolved through a lookup for an A record.
 // `expected` should be the first returned IPv4 address or empty to accept any IP address.
 type DNS struct {
-	Config
+	ProberConfig
 	domain, expected string
 }
 
 // Init configures the probe.
-func (d *DNS) Init(c Config) error {
+func (d *DNS) Init(c ProberConfig) error {
 	err := mapstructure.Decode(c.Options, d)
-	d.Config = c
+	d.ProberConfig = c
 
 	return err
 }

@@ -10,12 +10,12 @@ import (
 // SMTP Probe, used to check smtp servers status
 // BEWARE! Only full TLS servers are working with this probe.
 type SMTP struct {
-	Config
+	ProberConfig
 }
 
 // Init configures the probe.
-func (s *SMTP) Init(c Config) error {
-	s.Config = c
+func (s *SMTP) Init(c ProberConfig) error {
+	s.ProberConfig = c
 	return nil
 }
 

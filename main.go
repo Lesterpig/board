@@ -3,15 +3,13 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
+	rice "github.com/GeertJohan/go.rice"
+	"github.com/gobuffalo/envy"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
-
-	rice "github.com/GeertJohan/go.rice"
-	"github.com/gobuffalo/envy"
-	"github.com/sirupsen/logrus"
 )
 
 var port = flag.Int("p", 8080, "Port to use")
@@ -25,12 +23,16 @@ func main() {
 
 	interval := getInterval()
 
-	log.Infof("Probe interval: %d", interval)
+	log.Infof("probe interval: %d", interval)
 
-	manager, err := loadConfig(parseConfigString(*configPath))
+	config, err := loadConfig(parseConfigString(*configPath))
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		log.Fatal(os.Stderr, err)
+	}
+	manager, err := NewManager(config)
+
+	if err != nil {
+		log.Fatal(os.Stderr, err)
 	}
 
 	// Setup static folder

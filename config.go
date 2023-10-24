@@ -1,59 +1,33 @@
 package main
 
 import (
-	"errors"
+	"github.com/Lesterpig/board/alert"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/Lesterpig/board/alert"
 	"github.com/Lesterpig/board/probe"
 
 	"github.com/spf13/viper"
 )
 
-type serviceConfig struct {
-	probe.Config
-	Name     string
-	Category string
-	Probe    string
+type Config struct {
+	AutoDiscover AutoDiscoverConfig
+	Probes       []probe.Config
+	Alerts       []alert.AlertConfig
 }
-
-type alertConfig struct {
-	Type    string
-	Token   string
-	Webhook string
-	Channel string
+type AutoDiscoverConfig struct {
+	Ingres bool
 }
-
-var probeConstructors = map[string](func() probe.Prober){
-	"dns":       func() probe.Prober { return &probe.DNS{} },
-	"http":      func() probe.Prober { return &probe.HTTP{} },
-	"minecraft": func() probe.Prober { return &probe.Minecraft{} },
-	"port":      func() probe.Prober { return &probe.Port{} },
-	"smtp":      func() probe.Prober { return &probe.SMTP{} },
-}
-
-var alertConstructors = map[string](func(c alertConfig) alert.Alerter){
-	"pushbullet": func(c alertConfig) alert.Alerter {
-		return alert.NewPushbullet(c.Token)
-	},
-	"slack": func(c alertConfig) alert.Alerter {
-		return alert.NewSlack(c.Webhook, c.Channel)
-	},
-}
-
-var alerters []alert.Alerter
 
 func parseConfigString(cnf string) (dir string, name string) {
 	dir = filepath.Dir(cnf)
 	basename := filepath.Base(cnf)
 	name = strings.TrimSuffix(basename, filepath.Ext(basename))
-
 	return
 }
 
-func loadConfig(configPath, configName string) (*Manager, error) {
+func loadConfig(configPath, configName string) (*Config, error) {
 	viper.SetConfigName(configName)
 	viper.AddConfigPath(configPath)
 
@@ -62,60 +36,33 @@ func loadConfig(configPath, configName string) (*Manager, error) {
 		return nil, err
 	}
 
-	sc := make([]serviceConfig, 0)
+	sc := make([]probe.Config, 0)
+	err = viper.UnmarshalKey("Probes", &sc)
 
-	err = viper.UnmarshalKey("services", &sc)
+	adc := AutoDiscoverConfig{}
+	err = viper.UnmarshalKey("autodiscover", &adc)
+
+	ac := make([]alert.AlertConfig, 0)
+	err = viper.UnmarshalKey("Alerts", &ac)
+
+	conf := &Config{
+		AutoDiscover: adc,
+		Probes:       sc,
+		Alerts:       ac,
+	}
+	err = viper.Unmarshal(conf)
+	log.Printf("ProberConfig Read %v", conf)
+
 	if err != nil {
 		return nil, err
 	}
+	log.Printf(viper.ConfigFileUsed())
 
-	manager := Manager{}
-	manager.Services = make(map[string]([]*Service))
+	return conf, nil
 
-	for _, c := range sc {
-		constructor := probeConstructors[c.Probe]
-		if constructor == nil {
-			return nil, errors.New("unknown probe type: " + c.Probe)
-		}
-
-		c.Config = setProbeConfigDefaults(c.Config)
-
-		prober := constructor()
-
-		err = prober.Init(c.Config)
-		if err != nil {
-			return nil, err
-		}
-
-		manager.Services[c.Category] = append(manager.Services[c.Category], &Service{
-			Prober: prober,
-			Name:   c.Name,
-			Target: c.Target,
-		})
-	}
-
-	ac := make([]alertConfig, 0)
-
-	err = viper.UnmarshalKey("alerts", &ac)
-	if err != nil {
-		return nil, err
-	}
-
-	alerters = make([]alert.Alerter, 0)
-
-	for _, c := range ac {
-		constructor := alertConstructors[c.Type]
-		if constructor == nil {
-			return nil, errors.New("unknown alert type: " + c.Type)
-		}
-
-		alerters = append(alerters, constructor(c))
-	}
-
-	return &manager, err
 }
 
-func setProbeConfigDefaults(c probe.Config) probe.Config {
+func setProbeConfigDefaults(c probe.ProberConfig) probe.ProberConfig {
 	if c.Warning == 0 {
 		c.Warning = 500 * time.Millisecond
 	}

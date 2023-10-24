@@ -9,7 +9,7 @@ import (
 
 func TestHTTPSuccess(t *testing.T) {
 	h := &HTTP{}
-	assert.Nil(t, h.Init(Config{
+	assert.Nil(t, h.Init(ProberConfig{
 		Target:  "https://www.lesterpig.com",
 		Warning: 5 * time.Second,
 		Fatal:   10 * time.Second,
@@ -24,7 +24,7 @@ func TestHTTPSuccess(t *testing.T) {
 
 func TestHTTPWarning(t *testing.T) {
 	h := &HTTP{}
-	assert.Nil(t, h.Init(Config{
+	assert.Nil(t, h.Init(ProberConfig{
 		Target:  "https://www.lesterpig.com",
 		Warning: time.Microsecond,
 		Fatal:   10 * time.Second,
@@ -37,7 +37,7 @@ func TestHTTPWarning(t *testing.T) {
 
 func TestHTTP404(t *testing.T) {
 	h := &HTTP{}
-	assert.Nil(t, h.Init(Config{
+	assert.Nil(t, h.Init(ProberConfig{
 		Target:  "https://www.lesterpig.com/404",
 		Warning: 5 * time.Second,
 		Fatal:   10 * time.Second,
@@ -50,7 +50,7 @@ func TestHTTP404(t *testing.T) {
 
 func TestHTTPError(t *testing.T) {
 	h := &HTTP{}
-	assert.Nil(t, h.Init(Config{
+	assert.Nil(t, h.Init(ProberConfig{
 		Target:  "https://www.lesteerpig.com",
 		Warning: 5 * time.Second,
 		Fatal:   10 * time.Second,
@@ -63,7 +63,7 @@ func TestHTTPError(t *testing.T) {
 
 func TestHTTPTimeout(t *testing.T) {
 	h := &HTTP{}
-	assert.Nil(t, h.Init(Config{
+	assert.Nil(t, h.Init(ProberConfig{
 		Target:  "https://www.lesterpig.com/",
 		Warning: 5 * time.Second,
 		Fatal:   time.Microsecond,
@@ -76,7 +76,7 @@ func TestHTTPTimeout(t *testing.T) {
 
 func TestHTTPUnexpected(t *testing.T) {
 	h := &HTTP{}
-	assert.Nil(t, h.Init(Config{
+	assert.Nil(t, h.Init(ProberConfig{
 		Target:  "https://www.lesterpig.com",
 		Warning: 5 * time.Second,
 		Fatal:   10 * time.Second,
