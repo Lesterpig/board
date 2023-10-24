@@ -42,10 +42,10 @@ coverage: ## Generate test coverage report
 
 build: ## Build the binary to build/main
 	CGO_ENABLED=0 go build -o build/main ./main.go
-	$(RICE) append --exec /board
+	$(RICE) append --exec build/main
 
 run: ## Run the program
-	go run main.go
+	go run ./... -f examples/board.yaml
 
 tidy: ## Run go mod tidy
 	go mod tidy
