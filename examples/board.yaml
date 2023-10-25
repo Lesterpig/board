@@ -1,18 +1,23 @@
 AutoDiscover:
   Ingres: true
-Probes:
+
+Services:
   - Name: Lesterpig.com
     Category: Web
-    Type: http
+    Probe: http
     Config:
       Target: https://www.lesterpig.com
       Options:
         Regex: Loïck Bonniot
   - Name: SMTP
     Category: Services
-    Type: smtp
+    Probe: smtp
     Config:
       Warning: 10s
       Fatal: 15s
       Target: mail.google.com:465
 
+Alerts:
+  - Type: pushbullet
+    Token: <your token here>
+  # ...

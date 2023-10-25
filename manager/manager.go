@@ -22,15 +22,18 @@ type Service struct {
 
 // Manager stores several Services sorted by categories.
 type Manager struct {
-	Logger     *logrus.Logger        `json:"-"`
+	logger     *logrus.Logger
+	kubeClient *KubeClient
 	LastUpdate time.Time             `json:"LastUpdate"`
 	Services   map[string][]*Service `json:"Services,omitempty"`
 	Alerts     []alert.Alerter       `json:"Alerts,omitempty"`
 }
 
 func NewManager(cfg *config.Config, log *logrus.Logger) (*Manager, error) {
+	kubeClient := NewKubeClient()
 	manager := Manager{
-		Logger: log,
+		logger:     log,
+		kubeClient: kubeClient,
 	}
 
 	manager.Services = make(map[string][]*Service)
@@ -87,7 +90,7 @@ func (m *Manager) ProbeLoop(interval time.Duration) {
 // ProbeAll triggers the probe function for each registered service in the manager.
 // Everything is done asynchronously.
 func (m *Manager) probeAll() {
-	m.Logger.Debug("Probing all")
+	m.logger.Debug("Probing all")
 
 	m.LastUpdate = time.Now()
 
