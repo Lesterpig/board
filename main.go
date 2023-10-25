@@ -27,7 +27,7 @@ func main() {
 		log.Fatal("Error loading config file: ", err)
 	}
 
-	manager, err := manager.NewManager(config, log)
+	manager, err := manager.NewManager(config, log, nil)
 	if err != nil {
 		log.Fatal("Error initializing new manager: ", err)
 	}

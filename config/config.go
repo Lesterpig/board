@@ -15,13 +15,14 @@ import (
 
 type Config struct {
 	LoopInterval time.Duration
-	AutoDiscover AutoDiscoverConfig
+	AutoDiscover []AutoDiscoverConfig
 	Probes       []probe.Config
 	Alerts       []alert.AlertConfig
 }
 
 type AutoDiscoverConfig struct {
-	Ingres bool
+	LoopInterval       time.Duration
+	KubernetesResource string
 }
 
 func ParseConfigString(cnf string) (dir string, name string) {
@@ -46,7 +47,7 @@ func LoadConfig(configPath, configName string, log *logrus.Logger) (*Config, err
 		return nil, err
 	}
 
-	adc := AutoDiscoverConfig{}
+	adc := make([]AutoDiscoverConfig, 0)
 	err = viper.UnmarshalKey("AutoDiscover", &adc)
 	if err != nil {
 		return nil, err

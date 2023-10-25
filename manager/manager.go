@@ -29,11 +29,15 @@ type Manager struct {
 	Alerts     []alert.Alerter       `json:"Alerts,omitempty"`
 }
 
-func NewManager(cfg *config.Config, log *logrus.Logger) (*Manager, error) {
-	kubeClient := NewKubeClient()
+func NewManager(cfg *config.Config, log *logrus.Logger, client *KubeClient) (*Manager, error) {
 	manager := Manager{
 		logger:     log,
-		kubeClient: kubeClient,
+		kubeClient: client,
+	}
+
+	if cfg.AutoDiscover != nil && len(cfg.AutoDiscover) > 0 {
+		// Do magic
+
 	}
 
 	manager.Services = make(map[string][]*Service)

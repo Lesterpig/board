@@ -1,5 +1,9 @@
 AutoDiscover:
-  Ingres: true
+
+  - KubernetesResource: ingress
+    LoopInterval: 1m
+  - KubernetesResource: service
+    LoopInterval: 1m
 
 Services:
   - Name: Lesterpig.com
