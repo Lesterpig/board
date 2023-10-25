@@ -47,7 +47,7 @@ build: ## Build the binary to build/main
 	$(RICE) append --exec build/main
 
 run: ## Run the program
-	go run ./... -f examples/board.yaml
+	KUBECONFIG="$(kubeconfig)" go run ./... -f examples/board.yaml
 
 tidy: ## Run go mod tidy
 	go mod tidy

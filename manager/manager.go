@@ -81,11 +81,14 @@ func NewManager(cfg *config.Config, log *logrus.Logger, client *KubeClient) (*Ma
 			go func() {
 				m.logger.Infof("inside function")
 				for {
+					ticker := time.NewTicker(cfg.LoopInterval)
+
 					select {
 					case <-ctx.Done():
+						ticker.Stop()
 						return
 
-					case <-time.After(cfg.LoopInterval):
+					case <-ticker.C:
 						log.Printf("before fetcher()")
 						resources := <-fetcher(ctx)
 						log.Infof("Fetched resource: %v found: %v", adc.KubernetesResource, len(resources))
@@ -96,7 +99,7 @@ func NewManager(cfg *config.Config, log *logrus.Logger, client *KubeClient) (*Ma
 								log.Error("Could not create a Service from resource", err)
 								continue
 							}
-							m.logger.Debug("mapped %v resource to service %v", adc.KubernetesResource, mapService)
+							m.logger.Debugf("mapped %v resource to service %v", adc.KubernetesResource, mapService)
 							serviceExists := false
 							for cat, srvs := range m.Services {
 								if serviceExists {

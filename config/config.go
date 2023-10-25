@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -18,6 +19,14 @@ type Config struct {
 	AutoDiscover []AutoDiscoverConfig
 	Probes       []probe.Config
 	Alerts       []alert.AlertConfig
+	KubeConfig   KubeClientConfig
+}
+
+type KubeClientConfig struct {
+	Kubeconfig  string
+	Kubecontext string
+	Timeout     time.Duration
+	Namespace   string
 }
 
 type AutoDiscoverConfig struct {
@@ -41,6 +50,8 @@ func LoadConfig(configPath, configName string, log *logrus.Logger) (*Config, err
 		return nil, err
 	}
 
+	loopInterval := viper.GetDuration("LoopInterval")
+
 	sc := make([]probe.Config, 0)
 	err = viper.UnmarshalKey("Probes", &sc)
 	if err != nil {
@@ -52,25 +63,45 @@ func LoadConfig(configPath, configName string, log *logrus.Logger) (*Config, err
 	if err != nil {
 		return nil, err
 	}
+	for i := range adc {
+		if adc[i].LoopInterval == 0 {
+			log.Infof("No loop interval set for %v, using default of 5 minutes", adc[i].KubernetesResource)
+			adc[i].LoopInterval = 5 * time.Minute
+		}
+	}
 
 	ac := make([]alert.AlertConfig, 0)
 	err = viper.UnmarshalKey("Alerts", &ac)
 	if err != nil {
 		return nil, err
 	}
+	kubeconf := KubeClientConfig{}
+	err = viper.UnmarshalKey("KubeClient", &kubeconf)
+	if err != nil {
+		return nil, err
+	}
+	ns := os.Getenv("NAMESPACE")
+	if ns != "" {
+		kubeconf.Namespace = ns
+	} else {
+		log.Info("No namespace set, using default")
+		kubeconf.Namespace = "default"
+	}
 
 	conf := &Config{
+		LoopInterval: loopInterval,
 		AutoDiscover: adc,
 		Probes:       sc,
 		Alerts:       ac,
+		KubeConfig:   kubeconf,
 	}
 	err = viper.Unmarshal(conf)
-	log.Printf("ProberConfig Read %v", conf)
+	log.Info("ProberConfig Read: ", conf)
 
 	if err != nil {
 		return nil, err
 	}
-	log.Printf(viper.ConfigFileUsed())
+	log.Info(viper.ConfigFileUsed())
 
 	return conf, nil
 

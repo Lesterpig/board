@@ -1,3 +1,7 @@
+LoopInterval: 1s
+KubeClient:
+  timeout: 1s
+
 AutoDiscover:
   - KubernetesResource: ingress
     LoopInterval: 1m
