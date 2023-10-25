@@ -39,7 +39,7 @@ func (k *KubeClient) Fetch(kubeResource string) (func(ctx context.Context) <-cha
 
 func fetchIngressResources(ctx context.Context) <-chan []Ingress {
 	ch := make(chan []Ingress)
-
+	fmt.Printf("fetchIngressResources Called")
 	go func() {
 		defer close(ch)
 		select {

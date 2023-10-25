@@ -1,26 +1,21 @@
 AutoDiscover:
   - KubernetesResource: ingress
     LoopInterval: 1m
-  - KubernetesResource: service
-    LoopInterval: 1m
+#  - KubernetesResource: service
+#    LoopInterval: 1m
 
-Services:
+Probes:
   - Name: Lesterpig.com
     Category: Web
-    Probe: http
+    Type: http
     Config:
       Target: https://www.lesterpig.com
       Options:
         Regex: Loïck Bonniot
   - Name: SMTP
     Category: Services
-    Probe: smtp
+    Type: smtp
     Config:
       Warning: 10s
       Fatal: 15s
       Target: mail.google.com:465
-
-Alerts:
-  - Type: pushbullet
-    Token: <your token here>
-  # ...

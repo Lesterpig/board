@@ -39,20 +39,11 @@ func NewManager(cfg *config.Config, log *logrus.Logger, client *KubeClient) (*Ma
 	manager.Services = make(map[string][]*Service)
 	for _, c := range cfg.Probes {
 
-		proberConstructor := probe.ProberConstructors[c.Type]
-		if proberConstructor == nil {
-			return nil, errors.New("unknown probe type: " + c.Type)
-		}
-
-		c.Config = config.SetProbeConfigDefaults(c.Config)
-		prober := proberConstructor()
-
-		err := prober.Init(c.Config)
+		prober, err := manager.createProberFromConfig(c)
 		if err != nil {
 			return nil, err
 		}
-
-		manager.Services[c.Category] = append(manager.Services[c.Category], &Service{
+		manager.appendService(c.Category, &Service{
 			Prober: prober,
 			Name:   c.Name,
 			Target: c.Config.Target,
@@ -73,29 +64,96 @@ func NewManager(cfg *config.Config, log *logrus.Logger, client *KubeClient) (*Ma
 
 	ctx := context.Background()
 	if cfg.AutoDiscover != nil && len(cfg.AutoDiscover) > 0 {
-		for _, adc := range cfg.AutoDiscover {
-			fetcher, err := m.kubeClient.Fetch(adc.KubernetesResource)
+		for _, autoDiscoverConfig := range cfg.AutoDiscover {
+			fetcher, err := m.kubeClient.Fetch(autoDiscoverConfig.KubernetesResource)
 
 			if err != nil {
-				log.Error("Error fetching kubernetes resource: %v", err)
+				log.Errorf(
+					"Error fetching kubernetes resource: %v %v",
+					autoDiscoverConfig.KubernetesResource,
+					err,
+				)
 				continue
 			}
 
+			adc := autoDiscoverConfig
+			m.logger.Infof("fetching resources %v", autoDiscoverConfig.KubernetesResource)
 			go func() {
+				m.logger.Infof("inside function")
 				for {
 					select {
 					case <-ctx.Done():
 						return
-					case <-time.Tick(time.Second):
-						res := <-fetcher(ctx)
-						log.Infof("Fetched resource: %v found: %v", adc.KubernetesResource, len(res))
+
+					case <-time.After(cfg.LoopInterval):
+						log.Printf("before fetcher()")
+						resources := <-fetcher(ctx)
+						log.Infof("Fetched resource: %v found: %v", adc.KubernetesResource, len(resources))
+
+						for _, resource := range resources {
+							mapService, err := manager.mapKubernetesResource(adc.KubernetesResource, resource)
+							if err != nil {
+								log.Error("Could not create a Service from resource", err)
+								continue
+							}
+							m.logger.Debug("mapped %v resource to service %v", adc.KubernetesResource, mapService)
+							serviceExists := false
+							for cat, srvs := range m.Services {
+								if serviceExists {
+									break
+								}
+								for _, srv := range srvs {
+									if srv.Target == mapService.Target {
+										m.logger.Infof("service with target %v already exist in map in category %v", mapService.Target, cat)
+										serviceExists = true
+										break
+									}
+								}
+							}
+							if !serviceExists {
+								m.appendService("AutoDiscovered", mapService)
+							}
+						}
+						// TODO: Add it to the list of services
 					}
 				}
 			}()
 		}
 	}
+	m.logger.Info("returning")
 
 	return m, nil
+
+}
+
+func (m *Manager) appendService(cat string, service *Service) {
+	m.Services[cat] = append(m.Services[cat], service)
+}
+
+func (m *Manager) mapKubernetesResource(resource string, res Ingress) (*Service, error) {
+	opts := make(map[string]interface{})
+	opts["VerifyCertificate"] = res.tls
+
+	probeConfig := probe.Config{
+		Type: "http",
+		Config: probe.ProberConfig{
+			Options: opts,
+			Target:  res.host + res.path},
+		//Category: "AutoDiscovered",
+	}
+
+	proper, err := m.createProberFromConfig(probeConfig)
+
+	if err != nil {
+		return nil, err
+	} // empty configuration will result in defaults
+
+	service := Service{
+		Prober: proper,
+		Name:   resource + ": " + res.name,
+		Target: probeConfig.Config.Target,
+	}
+	return &service, nil
 
 }
 
@@ -144,4 +202,18 @@ func (m *Manager) AlertAll(category string, service *Service) {
 	for _, alerter := range m.Alerts {
 		alerter.Alert(service.Status, category, service.Name, service.Message, service.Target, date)
 	}
+}
+
+func (m *Manager) createProberFromConfig(c probe.Config) (probe.Prober, error) {
+	proberConstructor := probe.ProberConstructors[c.Type]
+	if proberConstructor == nil {
+		return nil, errors.New("unknown probe type: " + c.Type)
+	}
+
+	c.Config = config.SetProbeConfigDefaults(c.Config)
+
+	prober := proberConstructor()
+	err := prober.Init(c.Config)
+	return prober, err
+
 }
