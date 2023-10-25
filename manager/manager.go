@@ -24,7 +24,7 @@ type Service struct {
 type Manager struct {
 	Logger     *logrus.Logger        `json:"-"`
 	LastUpdate time.Time             `json:"LastUpdate"`
-	Services   map[string][]*Service `json:"Probes,omitempty"`
+	Services   map[string][]*Service `json:"Services,omitempty"`
 	Alerts     []alert.Alerter       `json:"Alerts,omitempty"`
 }
 
