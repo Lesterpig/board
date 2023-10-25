@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -35,21 +36,16 @@ func NewManager(cfg *config.Config, log *logrus.Logger, client *KubeClient) (*Ma
 		kubeClient: client,
 	}
 
-	if cfg.AutoDiscover != nil && len(cfg.AutoDiscover) > 0 {
-		// Do magic
-
-	}
-
 	manager.Services = make(map[string][]*Service)
 	for _, c := range cfg.Probes {
-		probeConstructor := probe.ProbeConstructors[c.Type]
-		if probeConstructor == nil {
+
+		proberConstructor := probe.ProberConstructors[c.Type]
+		if proberConstructor == nil {
 			return nil, errors.New("unknown probe type: " + c.Type)
 		}
 
 		c.Config = config.SetProbeConfigDefaults(c.Config)
-
-		prober := probeConstructor()
+		prober := proberConstructor()
 
 		err := prober.Init(c.Config)
 		if err != nil {
@@ -74,6 +70,30 @@ func NewManager(cfg *config.Config, log *logrus.Logger, client *KubeClient) (*Ma
 	}
 
 	m := &manager
+
+	ctx := context.Background()
+	if cfg.AutoDiscover != nil && len(cfg.AutoDiscover) > 0 {
+		for _, adc := range cfg.AutoDiscover {
+			fetcher, err := m.kubeClient.Fetch(adc.KubernetesResource)
+
+			if err != nil {
+				log.Error("Error fetching kubernetes resource: %v", err)
+				continue
+			}
+
+			go func() {
+				for {
+					select {
+					case <-ctx.Done():
+						return
+					case <-time.Tick(time.Second):
+						res := <-fetcher(ctx)
+						log.Infof("Fetched resource: %v found: %v", adc.KubernetesResource, len(res))
+					}
+				}
+			}()
+		}
+	}
 
 	return m, nil
 

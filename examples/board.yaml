@@ -1,5 +1,4 @@
 AutoDiscover:
-
   - KubernetesResource: ingress
     LoopInterval: 1m
   - KubernetesResource: service

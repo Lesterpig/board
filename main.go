@@ -26,10 +26,11 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading config file: ", err)
 	}
+	kubeClient := manager.NewKubeClient()
 
-	manager, err := manager.NewManager(config, log, nil)
+	mng, err := manager.NewManager(config, log, kubeClient)
 	if err != nil {
-		log.Fatal("Error initializing new manager: ", err)
+		log.Fatal("Error initializing new mng: ", err)
 	}
 
 	// Setup static folder
@@ -38,11 +39,11 @@ func main() {
 	// Setup logic route
 	http.HandleFunc("/data", func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		data, _ := json.Marshal(manager)
+		data, _ := json.Marshal(mng)
 		_, _ = w.Write(data)
 	})
 
-	go manager.ProbeLoop(getLoopInterval(config.LoopInterval))
+	go mng.ProbeLoop(getLoopInterval(config.LoopInterval))
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
 }
 

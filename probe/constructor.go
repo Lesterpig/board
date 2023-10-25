@@ -7,7 +7,7 @@ type Config struct {
 	Type     string
 }
 
-var ProbeConstructors = map[string](func() Prober){
+var ProberConstructors = map[string](func() Prober){
 	"dns":  func() Prober { return &DNS{} },
 	"http": func() Prober { return &HTTP{} },
 	"port": func() Prober { return &Port{} },
