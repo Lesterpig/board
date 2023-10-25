@@ -40,10 +40,19 @@ When running `make run`, the static files will be served directly from the [stat
 To build the Docker container, you can use `make image`.
 This will create a container image tagged with `tcs-board:latest`, which can be run using `docker run  -v "${PWD}/examples/board.yaml:/board.yaml:ro" -p 8080:8080 ghcr.io/trifork/tcs-board:0.0.1-next`.
 
-To deploy the container to a Kubernetes cluster, you can use `make deploy`.
+To deploy the container to a Kubernetes cluster, you can use 
+
+```bash
+make cluster # Creates a local Kubernetes cluster using k3d (requires Docker)
+make load-image # Load the container image into the local cluster
+make deploy # Deploy the board to the local cluster
+```
+
 This will create a local Kubernetes cluster using [k3d](https://k3d.io), and deploy the board to it.
+The board will be exposed on port  http://localhost:8081. If you want to re-redeploy the board, you can use `make redeploy`.
 
 Any binaries used in the Makefile are installed using `go install` and can be found in `bin/`.
+
 
 ## Release
 
