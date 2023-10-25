@@ -14,7 +14,6 @@ import (
 )
 
 var port = flag.Int("p", 8080, "Port to use")
-var intervalCli = flag.Int("i", 0, "Interval in minutes")
 var configPath = flag.String("f", "./board.yaml", "Path to config file")
 
 var log = logrus.StandardLogger()
