@@ -79,9 +79,10 @@ func NewManager(cfg *config.Config, log *logrus.Logger, client *KubeClient) (*Ma
 			adc := autoDiscoverConfig
 			m.logger.Infof("fetching resources %v", autoDiscoverConfig.KubernetesResource)
 			go func() {
-				m.logger.Infof("inside function")
+				m.logger.Debug("inside function")
+				m.logger.Infof("resource: %v loop interval: %v", adc.KubernetesResource, adc.LoopInterval)
 				for {
-					ticker := time.NewTicker(cfg.LoopInterval)
+					ticker := time.NewTicker(adc.LoopInterval)
 
 					select {
 					case <-ctx.Done():
@@ -89,42 +90,49 @@ func NewManager(cfg *config.Config, log *logrus.Logger, client *KubeClient) (*Ma
 						return
 
 					case <-ticker.C:
-						log.Printf("before fetcher()")
+						log.Debug("before fetcher()")
 						resources := <-fetcher(ctx)
 						log.Infof("Fetched resource: %v found: %v", adc.KubernetesResource, len(resources))
 
+						newAutoDiscoveredServices := make([]*Service, 0)
 						for _, resource := range resources {
-							mapService, err := manager.mapKubernetesResource(adc.KubernetesResource, resource)
+							mappedService, err := manager.mapKubernetesResource(adc.KubernetesResource, resource)
 							if err != nil {
-								log.Error("Could not create a Service from resource", err)
+								log.Error("Could not create a map the resource to a service", err)
 								continue
 							}
-							m.logger.Debugf("mapped %v resource to service %v", adc.KubernetesResource, mapService)
+							m.logger.Debugf("mapped %v resource to service %v", adc.KubernetesResource, mappedService)
+
 							serviceExists := false
 							for cat, srvs := range m.Services {
 								if serviceExists {
-									break
+									break // The service exists by configuration, no need to check other categories
 								}
+
+								if adc.KubernetesResource == cat {
+									continue // go to next category
+								}
+
 								for _, srv := range srvs {
-									if srv.Target == mapService.Target {
-										m.logger.Infof("service with target %v already exist in map in category %v", mapService.Target, cat)
+									if srv.Target == mappedService.Target {
+										m.logger.Infof("service with target %v already exist in map in category %v", mappedService.Target, cat)
 										serviceExists = true
 										break
 									}
 								}
 							}
 							if !serviceExists {
-								m.appendService("AutoDiscovered", mapService)
+								newAutoDiscoveredServices = append(newAutoDiscoveredServices, mappedService)
 							}
 						}
-						// TODO: Add it to the list of services
+						// by replacing the category entirely we will remove any services that are no longer present
+						m.Services[adc.KubernetesResource] = newAutoDiscoveredServices
 					}
 				}
 			}()
 		}
 	}
-	m.logger.Info("returning")
-
+	m.logger.Info("Done initializaing autodicover routines")
 	return m, nil
 
 }
